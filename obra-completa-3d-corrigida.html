@@ -1,0 +1,2938 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Gêmeo digital 3D interativo fiel aos projetos estruturais da obra AION-100 (Lucas Hajjar).">
+<title>AION-100 | Fundação e Baldrames 3D (Fiel aos PDFs)</title>
+<style>
+:root {
+  --bg: #090c12;
+  --panel: #111520;
+  --panel2: #161b2a;
+  --panel3: #1c2336;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --ink: #f8fafc;
+  --muted: #94a3b8;
+  --dimmed: #64748b;
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --blue: #38bdf8;
+  --purple: #a855f7;
+  --green: #10b981;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+body { background: var(--bg); color: var(--ink); height: 100vh; overflow: hidden; }
+
+button {
+  background: var(--panel2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+button:hover { background: var(--panel3); border-color: var(--line-strong); color: #fff; }
+button.active { background: var(--accent); color: #0f141e; border-color: var(--accent); font-weight: 700; box-shadow: 0 0 12px rgba(245, 158, 11, 0.35); }
+
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.viewport-area {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: radial-gradient(circle at 50% 40%, #151a26 0%, #090c12 100%);
+}
+#three-container canvas { width: 100%; height: 100%; display: block; }
+
+/* 1. Cabeçalho de Identificação (Superior Esquerdo) */
+.brand-card {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 320px;
+  background: rgba(17, 21, 32, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  z-index: 20;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  pointer-events: auto;
+}
+.brand-eyebrow {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.brand-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-top: 1px;
+}
+.brand-title span { font-weight: 400; color: var(--muted); }
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.stat-pill {
+  font-size: 10px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.stat-pill strong { color: var(--ink); }
+
+/* 2. Barra de Vistas Rápidas (Topo Direito Flutuante no Viewport) */
+.quick-views-bar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(17, 21, 32, 0.94);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line-strong);
+  border-radius: 30px;
+  padding: 4px 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+  pointer-events: auto;
+  white-space: nowrap;
+}
+.quick-views-bar button {
+  padding: 5px 9px;
+  font-size: 11px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+}
+.quick-views-bar button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.quick-views-bar button.active { background: var(--accent); color: #0f141e; font-weight: 700; }
+.quick-views-bar .btn-steel-summary {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--accent-light);
+  font-weight: 700;
+  margin-left: 2px;
+  padding: 5px 11px;
+}
+.quick-views-bar .btn-steel-summary:hover {
+  background: rgba(245, 158, 11, 0.28);
+  color: #fff;
+}
+
+/* 3. Barra Inferior de Navegação e Ajuda */
+.bottom-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+.view-state-card {
+  background: rgba(17, 21, 32, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  pointer-events: auto;
+  white-space: nowrap;
+}
+.help-card {
+  background: rgba(17, 21, 32, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  pointer-events: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 4. Painel de Inspeção do Elemento Focado (Abaixo do Brand Card - ZERO SOBREPOSIÇÃO) */
+.focus-inspector {
+  position: absolute;
+  top: 144px;
+  left: 14px;
+  width: 380px;
+  max-height: calc(100vh - 190px);
+  background: rgba(17, 21, 32, 0.96);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: none;
+  z-index: 25;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.75);
+  overflow-y: auto;
+  pointer-events: auto;
+}
+.focus-inspector::-webkit-scrollbar { width: 5px; }
+.focus-inspector::-webkit-scrollbar-thumb { background: #2f364a; border-radius: 3px; }
+
+.focus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: rgba(17, 21, 32, 0.98);
+  z-index: 2;
+}
+.focus-title { font-size: 15px; font-weight: 800; color: var(--accent); }
+.focus-subtitle { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.focus-body { font-size: 11px; display: grid; gap: 6px; line-height: 1.45; }
+.focus-body strong { color: #f1f5f9; }
+.focus-actions { margin-top: 12px; display: flex; gap: 8px; }
+.btn-close-focus { background: transparent; border: none; font-size: 16px; cursor: pointer; color: var(--muted); padding: 2px 6px; }
+.btn-close-focus:hover { color: #fff; background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+.tooltip-3d {
+  position: absolute;
+  background: rgba(15, 18, 26, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  pointer-events: none;
+  display: none;
+  z-index: 100;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+  white-space: nowrap;
+}
+
+/* 5. Sidebar Direita */
+.sidebar {
+  width: 420px;
+  height: 100%;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 15;
+}
+.sidebar-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sidebar-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--line);
+}
+.tab-btn {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: all .15s ease;
+}
+.tab-btn:hover { color: #fff; background: rgba(255,255,255,0.04); }
+.tab-btn.active {
+  color: var(--accent);
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+  font-weight: 700;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sidebar-content::-webkit-scrollbar { width: 5px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: #2f364a; border-radius: 3px; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin-bottom: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-group {
+  display: grid;
+  gap: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.slider-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px;
+  align-items: center;
+}
+.slider-row label { font-size: 11.5px; color: var(--ink); }
+.slider-row output { font-size: 11.5px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+input[type=range] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--accent);
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.layer-list { display: grid; gap: 5px; }
+.layer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: border-color .15s ease;
+}
+.layer-item:hover { border-color: #404b66; }
+.layer-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.layer-left span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.layer-item input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+.color-swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.element-search {
+  width: 100%;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.element-search:focus { outline: none; border-color: var(--accent); }
+
+.element-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 5px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.element-chips-grid::-webkit-scrollbar { width: 4px; }
+.element-chips-grid::-webkit-scrollbar-thumb { background: #2f364a; border-radius: 2px; }
+
+.element-chip {
+  padding: 5px 3px;
+  font-size: 10.5px;
+  text-align: center;
+  border-radius: 5px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all .14s ease;
+}
+.element-chip:hover {
+  background: var(--panel3);
+  border-color: var(--accent);
+  color: #fff;
+}
+.element-chip.selected {
+  background: var(--accent);
+  color: #120e04;
+  font-weight: 700;
+  border-color: var(--accent);
+}
+
+.summary-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.summary-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+.summary-table td { padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.summary-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.notice-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 11px;
+  color: #fed7aa;
+  line-height: 1.45;
+}
+
+.steel-summary-card {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.steel-summary-card + .steel-summary-card { margin-top: 10px; }
+.steel-summary-card h3 { font-size: 12px; margin-bottom: 8px; color: var(--ink); display: flex; justify-content: space-between; align-items: center; }
+.steel-summary-card p { margin-top: 7px; color: var(--muted); font-size: 10.5px; line-height: 1.4; }
+.steel-summary-card .summary-table td:last-child,
+.steel-summary-card .summary-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.kpi-box {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+}
+.kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+.kpi-val { font-size: 15px; font-weight: 800; color: var(--accent); margin-top: 2px; }
+.kpi-sub { font-size: 9.5px; color: var(--dimmed); }
+
+.btn-open-modal-large {
+  width: 100%;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fff;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .2s ease;
+  margin-bottom: 12px;
+}
+.btn-open-modal-large:hover {
+  background: var(--accent);
+  color: #0d121c;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+}
+
+/* 6. MODAL DO QUADRO DE RESUMO DE AÇO */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 10, 16, 0.88);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-window {
+  width: 1050px;
+  max-width: 95vw;
+  max-height: 90vh;
+  background: #111622;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #151b2a;
+}
+.modal-title { font-size: 16px; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.modal-subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.modal-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 20px;
+  background: #0d121c;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.modal-tab-btn {
+  padding: 7px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.modal-tab-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.modal-tab-btn.active {
+  background: var(--accent);
+  color: #0f141e;
+  font-weight: 700;
+}
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-body::-webkit-scrollbar { width: 6px; }
+.modal-body::-webkit-scrollbar-thumb { background: #2f364a; border-radius: 3px; }
+
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0d121c;
+}
+
+.table-steel-full {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.table-steel-full th {
+  background: #171d2c;
+  color: var(--muted);
+  padding: 9px 12px;
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 1px solid var(--line-strong);
+}
+.table-steel-full td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.table-steel-full tr:hover td { background: rgba(255,255,255,0.03); }
+.table-steel-full tfoot td {
+  background: #171d2c;
+  font-weight: 800;
+  color: #fff;
+  border-top: 2px solid var(--accent);
+}
+.badge-ca50 { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
+.badge-ca60 { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
+
+@media (max-width: 1180px) {
+  .sidebar { width: 360px; }
+  .bottom-bar { right: 14px; }
+  .brand-card { width: 300px; }
+  .quick-views-bar button { padding: 4px 8px; font-size: 10px; }
+}
+@media (max-width: 920px) {
+  body { overflow-y: auto; overflow-x: hidden; height: auto; -webkit-tap-highlight-color: transparent; }
+  .app-container { min-height: 100vh; min-height: 100dvh; height: auto; flex-direction: column; }
+  .viewport-area { height: 62vh; min-height: 420px; flex: none; position: relative; }
+  #three-container canvas { touch-action: none; }
+  .sidebar { width: 100%; height: auto; min-height: 38vh; border-left: 0; border-top: 1px solid var(--line); }
+  .brand-card { position: absolute; top: 10px; left: 10px; right: 10px; width: auto; max-width: none; padding: 8px 10px; }
+  .brand-title { font-size: 14px; }
+  .brand-eyebrow { font-size: 9px; }
+  .badge-row { gap: 4px; margin-top: 4px; }
+  .stat-pill { font-size: 9px; padding: 1px 5px; }
+  .quick-views-bar {
+    position: absolute;
+    top: 108px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    transform: none;
+    max-width: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    padding: 4px 6px;
+  }
+  .quick-views-bar button { padding: 5px 9px; font-size: 10px; flex-shrink: 0; }
+  .focus-inspector {
+    position: absolute;
+    top: 154px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    max-height: calc(62vh - 165px);
+  }
+  .bottom-bar {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 6px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .view-state-card { font-size: 10px; padding: 3px 8px; }
+  .help-card { font-size: 10px; padding: 3px 8px; width: 100%; }
+  .modal-backdrop { padding: 8px; }
+  .modal-window { width: 100%; max-width: 100%; max-height: 92vh; max-height: 92dvh; border-radius: 8px; }
+  .modal-header { padding: 10px 12px; }
+  .modal-title { font-size: 12.5px; }
+  .modal-tabs { padding: 6px 8px; gap: 4px; }
+  .modal-tab-btn { padding: 5px 8px; font-size: 10px; flex-shrink: 0; }
+  .modal-body { padding: 12px 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-steel-full { font-size: 10.5px; min-width: 580px; }
+  .table-steel-full th, .table-steel-full td { padding: 5px 6px; }
+}
+</style>
+
+<script src="three.min.js"></script>
+<script>
+if (typeof THREE === 'undefined') {
+  document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+}
+</script>
+<script src="OrbitControls.js"></script>
+<script>
+if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+}
+</script>
+</head>
+<body>
+
+<div class="app-container">
+  <main class="viewport-area" id="viewportArea">
+    <div id="three-container" style="width:100%; height:100%;"></div>
+
+    <!-- Barra Superior -->
+    <!-- Identificação do Projeto (Topo Esquerdo) -->
+    <div class="brand-card">
+      <div class="brand-eyebrow">Projeto Estrutural Oficial · Pranchas 01 a 08</div>
+      <div class="brand-title">AION-100 <span>Fundações & Baldrames 3D</span></div>
+      <div class="badge-row">
+        <span class="stat-pill"><strong>27</strong> Blocos (B1..B27)</span>
+        <span class="stat-pill"><strong>45</strong> Estacas Ø40</span>
+        <span class="stat-pill"><strong>22</strong> Vigas Baldrames</span>
+        <span class="stat-pill">Extensão: <strong>34,2 × 10,5 m</strong></span>
+      </div>
+    </div>
+
+    <!-- Barra de Vistas Rápidas e Ações (Topo Direito Flutuante) -->
+    <div class="quick-views-bar" id="quickViews">
+      <button type="button" class="active" data-view="iso" title="Vista Isométrica Geral">Iso</button>
+      <button type="button" data-view="planta" title="Vista Superior / Planta de Fôrma">Planta</button>
+      <button type="button" data-view="norte" title="Elevação Longitudinal Norte">Norte</button>
+      <button type="button" data-view="oeste" title="Elevação Transversal Oeste">Oeste</button>
+      <button type="button" data-view="estacas" title="Vista de Apoio / Estacas">Estacas</button>
+      <button type="button" id="btnResetView" title="Resetar Câmera e Filtros">Reset</button>
+      <button type="button" class="btn-steel-summary" id="btnOpenSteelModal" title="Abrir Quadro Geral de Quantitativos">Resumo de Aço & Concreto</button>
+    </div>
+
+    <!-- Barra Inferior -->
+    <div class="bottom-bar">
+      <div class="view-state-card" id="viewStateBadge">Visão Geral da Obra</div>
+      <div class="help-card">
+        <strong>Girar:</strong> Botão esquerdo &nbsp;|&nbsp; 
+        <strong>Deslocar:</strong> Botão direito / Shift &nbsp;|&nbsp; 
+        <strong>Zoom:</strong> Roda do mouse &nbsp;|&nbsp; 
+        <strong>Inspecionar:</strong> Clique em qualquer viga ou bloco. Estacas C40 de 7,0 m exibem corte visual de 3,5 m.
+      </div>
+    </div>
+
+    <!-- Painel de Inspeção do Elemento -->
+    <div class="focus-inspector" id="focusInspector">
+      <div class="focus-header">
+        <div>
+          <div class="focus-title" id="focusTitle">Bloco B5</div>
+          <div class="focus-subtitle" id="focusSubtitle">2xC40_7m · 160 × 60 × 60 cm</div>
+        </div>
+        <button type="button" class="btn-close-focus" id="btnCloseFocus" title="Fechar">✕</button>
+      </div>
+      <div class="focus-body" id="focusBody"></div>
+      <div class="focus-actions">
+        <button type="button" class="active" id="btnIsolate" style="flex:1;">Isolar no 3D</button>
+        <button type="button" id="btnShowAll" style="flex:1;">Ver no Conjunto</button>
+      </div>
+    </div>
+
+    <div id="tooltip" class="tooltip-3d"></div>
+  </main>
+
+  <!-- Sidebar Direita -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2 style="font-size:14px; font-weight:700;">Controles do Modelo</h2>
+      <span style="font-size:11px; color:var(--muted)">Pranchas 01 a 08</span>
+    </div>
+
+    <div class="sidebar-tabs">
+      <button type="button" class="tab-btn active" data-tab="camadas">Camadas & Visão</button>
+      <button type="button" class="tab-btn" data-tab="elementos">Navegador</button>
+      <button type="button" class="tab-btn" data-tab="resumo">Quantitativos & Resumos</button>
+    </div>
+
+    <div class="sidebar-content" id="tabContent">
+      <!-- ABA 1 -->
+      <div id="tabCamadas" style="display:flex; flex-direction:column; gap:14px;">
+        <div class="slider-group">
+          <div class="section-label" style="margin:0 0 6px 0;">Controle do Concreto Translúcido</div>
+          <div class="slider-row">
+            <label for="opacityBlocos">Opacidade dos Blocos:</label>
+            <output id="outBlocos">35%</output>
+            <input type="range" id="opacityBlocos" min="0" max="100" value="35">
+          </div>
+          <div class="slider-row">
+            <label for="opacityVigas">Opacidade das Vigas Baldrames:</label>
+            <output id="outVigas">35%</output>
+            <input type="range" id="opacityVigas" min="0" max="100" value="35">
+          </div>
+          <div class="slider-row">
+            <label for="opacityEstacas">Opacidade do concreto das estacas:</label>
+            <output id="outEstacas">28%</output>
+            <input type="range" id="opacityEstacas" min="0" max="100" value="28">
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="section-label" style="margin:0 0 6px 0;">Explosão das Armaduras</div>
+          <div class="slider-row">
+            <label for="explodeRange">Distanciamento Didático:</label>
+            <output id="outExplode">0 cm</output>
+            <input type="range" id="explodeRange" min="0" max="50" value="0">
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Visibilidade por Categoria</div>
+          <div class="layer-list">
+            <label class="layer-item">
+              <div class="layer-left">
+                <input type="checkbox" id="chkConcreteBlocks" checked>
+                <span class="color-swatch" style="background:#d6d3d1"></span>
+                <span>Concreto dos Blocos (27 un)</span>
+              </div>
+            </label>
+            <label class="layer-item">
+              <div class="layer-left">
+                <input type="checkbox" id="chkConcreteBeams" checked>
+                <span class="color-swatch" style="background:#cbd5e1"></span>
+                <span>Concreto das Vigas Baldrames (22 un)</span>
+              </div>
+            </label>
+            <label class="layer-item">
+              <div class="layer-left">
+                <input type="checkbox" id="chkPiles" checked>
+                <span class="color-swatch" style="background:#64748b"></span>
+                <span>Estacas de Fundação (45 estacas Ø40)</span>
+              </div>
+            </label>
+            <label class="layer-item">
+              <div class="layer-left">
+                <input type="checkbox" id="chkBlockRebars" checked>
+                <span class="color-swatch" style="background:var(--purple)"></span>
+                <span>Armaduras dos Blocos (Fiel à Prancha)</span>
+              </div>
+            </label>
+            <label class="layer-item">
+              <div class="layer-left">
+                <input type="checkbox" id="chkBeamRebars" checked>
+                <span class="color-swatch" style="background:var(--accent)"></span>
+                <span>Armaduras das Vigas Baldrames</span>
+              </div>
+            </label>
+            <label class="layer-item">
+              <div class="layer-left">
+                <input type="checkbox" id="chkPillars" checked>
+                <span class="color-swatch" style="background:var(--blue)"></span>
+                <span>Arranques de Pilares (P1 a P27)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Plano de Seção Dinâmico</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <button type="button" id="btnCutX">Corte Long. (X)</button>
+            <button type="button" id="btnCutY">Corte Transv. (Y)</button>
+          </div>
+          <button type="button" id="btnCutOff" class="active" style="width:100%; margin-top:6px;">Desativar Cortes</button>
+        </div>
+      </div>
+
+      <!-- ABA 2 -->
+      <div id="tabElementos" style="display:none; flex-direction:column; gap:12px;">
+        <input type="text" class="element-search" id="elementSearch" placeholder="Buscar Bloco ou Viga (ex: B5, B13, VB1, B21)...">
+        
+        <div>
+          <div class="section-label">Blocos de Fundação (B1 a B27)</div>
+          <div class="element-chips-grid" id="blockChips"></div>
+        </div>
+
+        <div>
+          <div class="section-label">Vigas Baldrames (VB1 a VB22)</div>
+          <div class="element-chips-grid" id="beamChips"></div>
+        </div>
+      </div>
+
+      <!-- ABA 3 -->
+      <div id="tabResumo" style="display:none; flex-direction:column; gap:12px;">
+        <div class="notice-box">
+          <strong>Resumo de Materiais (NBR 6118 / NBR 6122 / NBR 12655):</strong><br>
+          Valores extraídos das pranchas oficiais AION-EST-01 a 08. Aço com perda de 10% inclusa. Concreto estrutural fck = 25 MPa e lastro magro fck = 10 MPa.
+        </div>
+
+        <button type="button" class="btn-open-modal-large" id="btnOpenSteelModalSidebar">
+          Abrir Quadro Completo (Aço, Concreto & Fôrmas)
+        </button>
+
+        <div class="kpi-grid">
+          <div class="kpi-box">
+            <span class="kpi-label">Concreto C-25 Total</span>
+            <span class="kpi-val">55,24 m³</span>
+            <span class="kpi-sub">17,54 m³ bal/bl + 37,70 m³ est</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Área de Fôrmas</span>
+            <span class="kpi-val">143,34 m²</span>
+            <span class="kpi-sub">86,46 m² vig + 56,88 m² bl</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Aço Baldrame + Blocos</span>
+            <span class="kpi-val">1.414,1 kg</span>
+            <span class="kpi-sub">1.140,4 kg CA-50 + 273,7 kg CA-60</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Aço Estacas C40 (45 un)</span>
+            <span class="kpi-val">2.632,2 kg</span>
+            <span class="kpi-sub">2.583,1 kg (7m) + 49,1 kg (2m)</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Lastro Concreto C-10</span>
+            <span class="kpi-val">~1,55 m³</span>
+            <span class="kpi-sub">Espessura mín. 5 cm</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Taxa Média de Aço</span>
+            <span class="kpi-val">80,6 kg/m³</span>
+            <span class="kpi-sub">Baldrame: 118,7 | Blocos: 56,3</span>
+          </div>
+        </div>
+
+        <!-- QUADRO DE RESUMO DE CONCRETO E FÔRMAS -->
+        <div>
+          <div class="section-label">Resumo de Concreto e Fôrmas</div>
+          <div class="steel-summary-card">
+            <h3>Concreto Estrutural C-25 e Fôrmas por Prancha</h3>
+            <table class="summary-table">
+              <thead><tr><th>Elemento / Prancha</th><th>Concreto</th><th>Fôrmas</th><th>Slump</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Vigas VB1 a VB16</strong> (EST-07)</td><td>5,95 m³</td><td>74,85 m²</td><td>12 ± 2 cm</td></tr>
+                <tr><td><strong>Vigas VB17 a VB22</strong> (EST-08)</td><td>0,89 m³</td><td>11,61 m²</td><td>12 ± 2 cm</td></tr>
+                <tr><td><strong>Blocos B1 a B7</strong> (EST-02)</td><td>3,51 m³</td><td>17,28 m²</td><td>12 ± 2 cm</td></tr>
+                <tr><td><strong>Blocos B8 a B15</strong> (EST-03)</td><td>3,36 m³</td><td>17,52 m²</td><td>12 ± 2 cm</td></tr>
+                <tr><td><strong>Blocos B16 a B23</strong> (EST-04)</td><td>3,02 m³</td><td>16,32 m²</td><td>12 ± 2 cm</td></tr>
+                <tr><td><strong>Blocos B24 a B27</strong> (EST-05)</td><td>0,81 m³</td><td>5,76 m²</td><td>12 ± 2 cm</td></tr>
+                <tr style="background:rgba(255,255,255,0.03);"><td><strong>Subtotal Baldrames + Blocos</strong></td><td><strong>17,54 m³</strong></td><td><strong>143,34 m²</strong></td><td>—</td></tr>
+                <tr><td><strong>42 Estacas C40 (7,0 m)</strong> (EST-01)</td><td>36,95 m³</td><td>Escavado</td><td>18 ± 2 cm</td></tr>
+                <tr><td><strong>3 Estacas C40 (2,0 m)</strong> (EST-01)</td><td>0,75 m³</td><td>Escavado</td><td>18 ± 2 cm</td></tr>
+                <tr style="background:rgba(255,255,255,0.03);"><td><strong>Subtotal Estacas C40</strong></td><td><strong>37,70 m³</strong></td><td>—</td><td>—</td></tr>
+                <tr><td><strong>Lastro Concreto Magro (C-10)</strong></td><td>~1,55 m³</td><td>Fundo vala</td><td>10 ± 2 cm</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td style="font-weight:700; color:var(--accent);">TOTAL CONCRETO C-25</td><td style="font-weight:800; color:var(--accent);">55,24 m³</td><td colspan="2" style="font-weight:700; color:#fff;">Fôrmas: 143,34 m²</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- QUADRO DE RESUMO DE AÇO -->
+        <div>
+          <div class="section-label">Resumo de Aço Consolidado</div>
+          <div class="steel-summary-card">
+            <h3>Totais de Aço por Bitola (Baldrame + Blocos)</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso (+10%)</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Ø 5,0 mm</strong></td><td><span class="badge-ca60">CA-60</span></td><td>1.614,7 m</td><td><strong>273,7 kg</strong></td></tr>
+                <tr><td><strong>Ø 6,3 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>257,4 m</td><td><strong>69,2 kg</strong></td></tr>
+                <tr><td><strong>Ø 8,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>584,9 m</td><td><strong>253,7 kg</strong></td></tr>
+                <tr><td><strong>Ø 10,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>388,0 m</td><td><strong>263,0 kg</strong></td></tr>
+                <tr><td><strong>Ø 12,5 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>191,1 m</td><td><strong>202,3 kg</strong></td></tr>
+                <tr><td><strong>Ø 16,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>203,0 m</td><td><strong>352,1 kg</strong></td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="3" style="font-weight:700;">TOTAL BALDRAME + BLOCOS</td><td style="font-weight:800; color:var(--accent); text-align:right;">1.414,1 kg</td></tr>
+                <tr><td colspan="3" style="color:var(--muted); font-size:10px;">Estacas C40 (45 un)</td><td style="color:var(--muted); font-size:10px; text-align:right;">2.632,2 kg</td></tr>
+                <tr><td colspan="3" style="font-weight:800; color:#38bdf8;">TOTAL AÇO DA OBRA</td><td style="font-weight:800; color:#38bdf8; text-align:right;">4.046,3 kg</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div></div>
+  </aside>
+</div>
+
+<script>
+// --- BANCO DE DADOS ESTRUTURAL COMPLETO E FIEL AOS PDFS ---
+// Centro da obra: X = 11711.2 cm, Y = 50524.5 cm
+const DATA = {
+  center: [11711.2, 50524.5],
+  blocos: {
+    // Folha 02
+    "B1":  { id:"B1",  pilar:"P1",  x:10000.0, y:51048.9, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:10.0, alt:83} } },
+    "B2":  { id:"B2",  pilar:"P2",  x:10131.5, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:4, espac:13}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:8, diam:10.0, alt:83} } },
+    "B3":  { id:"B3",  pilar:"P3",  x:10496.0, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:12.5, quant:4, espac:13}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:10}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B4":  { id:"B4",  pilar:"P4",  x:10829.0, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:8.0, quant:7, espac:6}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:6, espac:7}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B5":  { id:"B5",  pilar:"P5",  x:11209.0, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:6, espac:7}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B6":  { id:"B6",  pilar:"P6",  x:11589.0, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:6, espac:7}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B7":  { id:"B7",  pilar:"P7",  x:11969.0, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:6, espac:7}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:16.0, alt:105} } },
+    
+    // Folha 03
+    "B8":  { id:"B8",  pilar:"P8",  x:12349.0, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:12.5, quant:6, espac:7}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:10}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:10.0, alt:83} } },
+    "B9":  { id:"B9",  pilar:"P9",  x:12736.5, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:8.0, quant:10, espac:4}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:6, espac:7}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:10.0, alt:83} } },
+    "B10": { id:"B10", pilar:"P10", x:12901.4, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:12.5, quant:5, espac:9}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:10}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:10.0, alt:83} } },
+    "B11": { id:"B11", pilar:"P11", x:13422.4, y:50998.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:50, prof:700, ca:-60}, {rx:0, ry:-50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:12.5, quant:4, espac:13}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:10}, estribosV:{diam:5.0, quant:7}, pilar:{quant:8, diam:10.0, alt:83} } },
+    "B12": { id:"B12", pilar:"P12", x:12349.0, y:50773.4, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:4, diam:10.0, alt:83} } },
+    "B13": { id:"B13", pilar:"P13", x:12731.0, y:50773.4, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:8.0, quant:9, espac:4}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:6, espac:7}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:10.0, alt:83} } },
+    "B14": { id:"B14", pilar:"P14", x:12901.4, y:50778.9, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:10.0, alt:83} } },
+    "B15": { id:"B15", pilar:"P15", x:13422.4, y:50784.4, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
+
+    // Folha 04
+    "B16": { id:"B16", pilar:"P16", x:12349.0, y:50555.9, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:12.5, quant:5, espac:9}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:10}, estribosV:{diam:5.0, quant:7}, pilar:{quant:8, diam:12.5, alt:90} } },
+    "B17": { id:"B17", pilar:"P17", x:12731.0, y:50555.9, dim:[160,60,60],  orient:"X",       estacas:[{rx:-50, ry:0, prof:700, ca:-60}, {rx:50, ry:0, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:7, espac:6}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:6, diam:12.5, alt:90} } },
+    "B18": { id:"B18", pilar:"P18", x:10131.5, y:50491.5, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:5, espac:10, w:51, l:51}, pilar:{quant:8, diam:10.0, alt:83} } },
+    "B19": { id:"B19", pilar:"P19", x:10121.5, y:50211.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:6, espac:8, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B20": { id:"B20", pilar:"P20", x:10116.0, y:50005.5, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:10.0, alt:83} } },
+    "B21": { id:"B21", pilar:"P21", x:12349.0, y:50005.5, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:7, espac:6}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:16.0, alt:105} } },
+    "B22": { id:"B22", pilar:"P22", x:12731.0, y:50005.5, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:6, espac:7}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:16.0, alt:105} } },
+    "B23": { id:"B23", pilar:"P23", x:10496.0, y:50000.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
+
+    // Folha 05
+    "B24": { id:"B24", pilar:"P24", x:10829.0, y:50000.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B25": { id:"B25", pilar:"P25", x:11209.0, y:50000.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B26": { id:"B26", pilar:"P26", x:11589.0, y:50000.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
+    "B27": { id:"B27", pilar:"P27", x:11969.0, y:50000.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
+           rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } }
+  },
+  estacasIsoladas: [
+    { id:"E1", x:10147.0, y:50780.9, prof:200, ca:-10 },
+    { id:"E2", x:10490.5, y:50211.0, prof:200, ca:-10 },
+    { id:"E3", x:12213.5, y:50212.5, prof:200, ca:-10 }
+  ],
+  vigas: [
+    // Linha Longitudinal Norte (Folha 07)
+    { id:"VB1",  secao:"20x45", b:20, h:45, nos:["B1", "B2", "B3", "B4", "B5"], desc:"Baldrame Longitudinal Norte (P1-P5)",
+      rebar: { inf:{quant:4, diam:16.0, desc:"2 N51 Ø16.0 C=1200 + 2 N52 Ø16.0 C=236 + 1 N10 Ø8.0 C=1200 + 1 N9 Ø8.0 C=150"}, sup:{quant:2, diam:10.0, desc:"2 N34 Ø10.0 C=1200 + 4 N54 Ø16.0 C=200 + 1 N9 Ø8.0 C=150"}, pele:{quant:6, diam:6.3, desc:"2x3 N4 Ø6.3 C=1200 + 2x3 N5 Ø6.3 C=131"}, estribos:{diam:5.0, espac:12, desc:"82 N1 Ø5.0 c/12, c/16 e c/20 C=117"} } },
+    { id:"VB2",  secao:"20x45", b:20, h:45, nos:["B5", "B6", "B7", "B8"], desc:"Baldrame Longitudinal Norte (P5-P8)",
+      rebar: { inf:{quant:3, diam:16.0, desc:"2 N53 Ø16.0 C=1193 + 1 N35 Ø10.0 C=1193"}, sup:{quant:2, diam:10.0, desc:"2 N36 Ø10.0 C=1194 + 3 N54 Ø16.0 C=200 + 1 N7 Ø6.3 C=172"}, pele:{quant:6, diam:6.3, desc:"2x3 N6 Ø6.3 C=1194"}, estribos:{diam:5.0, espac:15, desc:"73 N1 Ø5.0 c/15, c/16, c/20 C=117"} } },
+    { id:"VB3",  secao:"20x45", b:20, h:45, nos:["B8", "B9", "B10"], desc:"Baldrame Longitudinal Norte (P8-P10)",
+      rebar: { inf:{quant:3, diam:8.0, desc:"3 N11 Ø8.0 C=606"}, sup:{quant:2, diam:10.0, desc:"2 N37 Ø10.0 C=606"}, pele:null, estribos:{diam:5.0, espac:20, desc:"31 N1 Ø5.0 c/20 C=117"} } },
+    { id:"VB4",  secao:"40x30", b:40, h:30, pontos:[{x:12901.4, y:50988.9}, {x:13422.4, y:50988.9}], desc:"Baldrame Longitudinal Norte (P10-P11)",
+      rebar: { inf:{quant:4, diam:8.0, desc:"4 N12 Ø8.0 C=575"}, sup:{quant:7, diam:8.0, desc:"6 N14 Ø8.0 C=630 + 1 N13 Ø8.0 C=255 + 1 N9 Ø8.0 C=150"}, pele:null, estribos:{diam:5.0, espac:15, duplo:true, desc:"Estribos duplos 2x39 N2 Ø5.0 c/15 C=105"} } },
+
+    // Linha Longitudinal Intermediária (Folhas 07 e 08)
+    { id:"VB5",  secao:"19x30", b:19, h:30, nos:["B12", "B13", "B14", "B15"], desc:"Baldrame Longitudinal Intermediário (P12-P15)",
+      rebar: { inf:{quant:3, diam:10.0, desc:"2 N38 Ø10.0 C=1128 + 1 N15 Ø8.0 C=376"}, sup:{quant:6, diam:8.0, desc:"2 N18 Ø8.0 C=1155 + 2 N17 Ø8.0 C=926 + 2 N16 Ø8.0 C=716"}, pele:null, estribos:{diam:5.0, espac:15, desc:"77 N3 Ø5.0 c/15 C=85"} } },
+    { id:"VB6",  secao:"19x30", b:19, h:30, nos:["B16", "B17"], desc:"Baldrame Intermediário (P16-P17)",
+      rebar: { inf:{quant:2, diam:8.0, desc:"2 N19 Ø8.0 C=486"}, sup:{quant:2, diam:8.0, desc:"2 N19 Ø8.0 C=486"}, pele:null, estribos:{diam:5.0, espac:15, desc:"33 N3 Ø5.0 c/15 C=85"} } },
+    { id:"VB7",  secao:"19x30", b:19, h:30, pontos:[{x:12354.5, y:50299.5}, {x:12731.0, y:50299.5}], desc:"Baldrame Intermediário entre VB17 e VB19 (vão 401 cm)",
+      rebar: { inf:{quant:2, diam:12.5, desc:"2 N44 Ø12.5 C=395"}, sup:{quant:2, diam:8.0, desc:"2 N20 Ø8.0 C=395"}, pele:null, estribos:{diam:5.0, espac:11, desc:"30 N3 Ø5.0 c/11 e c/15 C=85"} } },
+    { id:"VB8",  secao:"19x30", b:19, h:30, nos:["B19", "E2"], desc:"Baldrame Longitudinal Oeste (P19 a Estaca E2)",
+      rebar: { inf:{quant:2, diam:10.0, desc:"2 N42 Ø10.0 C=413"}, sup:{quant:2, diam:10.0, desc:"2 N43 Ø10.0 C=435"}, pele:null, estribos:{diam:5.0, espac:15, desc:"26 N3 Ø5.0 c/15 C=85"} } },
+    { id:"VB9",  secao:"19x30", b:19, h:30, pontos:[{x:12213.5, y:50212.5}, {x:12354.5, y:50212.5}], desc:"Baldrame de Ligação (Estaca E3 à VB17)",
+      rebar: { inf:{quant:2, diam:8.0, desc:"2 N21 Ø8.0 C=167"}, sup:{quant:2, diam:8.0, desc:"2 N22 Ø8.0 C=209"}, pele:null, estribos:{diam:5.0, espac:15, desc:"9 N3 Ø5.0 c/15 C=85"} } },
+
+    // Linha Longitudinal Sul (Folha 07)
+    { id:"VB10", secao:"19x30", b:19, h:30, nos:["B20", "B23", "B24", "B25"], desc:"Baldrame Longitudinal Sul (P20-P25)",
+      rebar: { inf:{quant:3, diam:8.0, desc:"3 N23 Ø8.0 C=1147"}, sup:{quant:3, diam:12.5, desc:"3 N46 Ø12.5 C=1158"}, pele:null, estribos:{diam:5.0, espac:15, desc:"80 N3 Ø5.0 c/14 e c/15 C=85"} } },
+    { id:"VB11", secao:"19x30", b:19, h:30, nos:["B25", "B26", "B27", "B21"], desc:"Baldrame Longitudinal Sul (P25-P21)",
+      rebar: { inf:{quant:4, diam:8.0, desc:"3 N25 Ø8.0 C=1194 + 1 N24 Ø8.0 C=387"}, sup:{quant:5, diam:12.5, desc:"3 N48 Ø12.5 C=1085 + 2 N49 Ø12.5 C=226"}, pele:null, estribos:{diam:5.0, espac:15, desc:"82 N3 Ø5.0 c/15 C=85"} } },
+    { id:"VB12", secao:"19x30", b:19, h:30, nos:["B21", "B22"], desc:"Baldrame Longitudinal Sul (P21-P22)",
+      rebar: { inf:{quant:2, diam:8.0, desc:"2 N26 Ø8.0 C=436"}, sup:{quant:3, diam:8.0, desc:"2 N26 Ø8.0 C=436 + 1 N27 Ø8.0 C=172"}, pele:null, estribos:{diam:5.0, espac:15, desc:"30 N3 Ø5.0 c/15 C=85"} } },
+
+    // Vigas Transversais (Norte-Sul) (Folhas 07 e 08)
+    { id:"VB13", secao:"20x45", b:20, h:45, nos:["B20", "B19", "B18"], desc:"Baldrame Transversal Oeste (P20-P18)",
+      rebar: { inf:{quant:3, diam:8.0, desc:"3 N28 Ø8.0 C=540"}, sup:{quant:4, diam:8.0, desc:"4 N29 Ø8.0 C=577"}, pele:{quant:6, diam:6.3, desc:"2x3 N8 Ø6.3 C=260"}, estribos:{diam:5.0, espac:16, desc:"36 N1 Ø5.0 c/13, c/16, c/20 C=117"} } },
+    { id:"VB14", secao:"20x45", b:20, h:45, nos:["B18", "E1", "B2"], desc:"Baldrame Transversal (P18 - E1 - P2)",
+      rebar: { inf:{quant:2, diam:10.0, desc:"2 N39 Ø10.0 C=611"}, sup:{quant:4, diam:10.0, desc:"2 N41 Ø10.0 C=639 + 2 N40 Ø10.0 C=325"}, pele:null, estribos:{diam:5.0, espac:15, desc:"40 N1 Ø5.0 c/15 e c/16 C=117"} } },
+    { id:"VB15", secao:"19x30", b:19, h:30, nos:["B23", "E2"], desc:"Baldrame Transversal (P23 a Estaca E2)",
+      rebar: { inf:{quant:2, diam:8.0, desc:"2 N30 Ø8.0 C=255"}, sup:{quant:2, diam:8.0, desc:"2 N31 Ø8.0 C=305"}, pele:null, estribos:{diam:5.0, espac:15, desc:"15 N3 Ø5.0 c/15 C=85"} } },
+    { id:"VB16", secao:"19x30", b:19, h:30, pontos:[{x:12213.5, y:50000.0}, {x:12213.5, y:50212.5}], desc:"Baldrame Transversal (VB11 a Estaca E3)",
+      rebar: { inf:{quant:2, diam:8.0, desc:"2 N32 Ø8.0 C=236"}, sup:{quant:4, diam:8.0, desc:"4 N33 Ø8.0 C=282"}, pele:null, estribos:{diam:5.0, espac:15, desc:"13 N3 Ø5.0 c/15 C=85"} } },
+    { id:"VB17", secao:"19x30", b:19, h:30, nos:["B21", "B16"], desc:"Baldrame Transversal (P21-P16)",
+      rebar: { inf:{quant:4, diam:8.0, desc:"2 N5 Ø8.0 C=712 + 2 N3 Ø6.3 C=371"}, sup:{quant:5, diam:12.5, desc:"3 N14 Ø12.5 C=337 + 2 N8 Ø10.0 C=417"}, pele:null, estribos:{diam:5.0, espac:15, desc:"28 N1 Ø5.0 c/15 C=85"} } },
+    { id:"VB18", secao:"19x30", b:19, h:30, nos:["B16", "B12", "B8"], desc:"Baldrame Transversal (P16 - P12 - P8)",
+      rebar: { inf:{quant:3, diam:10.0, desc:"3 N12 Ø10.0 C=597"}, sup:{quant:3, diam:12.5, desc:"3 N16 Ø12.5 C=618"}, pele:null, estribos:{diam:5.0, espac:15, desc:"18 N1 Ø5.0 c/15 C=85"} } },
+    { id:"VB19", secao:"19x30", b:19, h:30, nos:["B22", "B17"], desc:"Baldrame Transversal (P22-P17)",
+      rebar: { inf:{quant:3, diam:10.0, desc:"2 N9 Ø10.0 C=664 + 1 N4 Ø6.3 C=171"}, sup:{quant:2, diam:16.0, desc:"2 N18 Ø16.0 C=654"}, pele:null, estribos:{diam:5.0, espac:15, desc:"31 N1 Ø5.0 c/15 C=85"} } },
+    { id:"VB20", secao:"19x30", b:19, h:30, nos:["B17", "B13", "B9"], desc:"Baldrame Transversal (P17 - P13 - P9)",
+      rebar: { inf:{quant:4, diam:10.0, desc:"3 N10 Ø10.0 C=571 + 1 N3 Ø6.3 C=371"}, sup:{quant:2, diam:16.0, desc:"2 N19 Ø16.0 C=624"}, pele:null, estribos:{diam:5.0, espac:15, desc:"15 N1 Ø5.0 c/15 C=85"} } },
+    { id:"VB21", secao:"19x30", b:19, h:30, nos:["B14", "B10"], desc:"Baldrame Transversal (P14-P10)",
+      rebar: { inf:{quant:2, diam:16.0, desc:"2 N20 Ø16.0 C=324"}, sup:{quant:2, diam:16.0, desc:"2 N20 Ø16.0 C=324"}, pele:null, estribos:{diam:5.0, espac:10, desc:"12 N1 Ø5.0 c/10 C=85"} } },
+    { id:"VB22",  secao:"40x30", b:40, h:30, nos:["B15", "B11"], desc:"Baldrame Transversal Leste (P15-P11)",
+      rebar: { inf:{quant:4, diam:12.5, desc:"4 N15 Ø12.5 C=326"}, sup:{quant:7, diam:10.0, desc:"7 N11 Ø10.0 C=374"}, pele:null, estribos:{diam:5.0, espac:15, duplo:true, desc:"Estribos duplos 2x8 N2 Ø5.0 c/15 C=105"} } }
+  ]
+};
+
+// Convenção dimensional: unidade do modelo = cm; dados de armadura = mm.
+// As estacas C40 de 7,0 m recebem um corte visual para inspeção, sem alterar a
+// profundidade de projeto registrada em `prof`.
+const PILE_VISIBLE_CUT_CM = 350;
+const barRadiusCm = (diamMm) => diamMm / 20;
+
+// Geometria de formas extraída do AIO-EST-06-BAL-FOR.dxf.
+// Coordenadas DXF em unidade de desenho; conversão aferida pelos centros B9/B13.
+const DXF_FORM = {
+  scaleCm: 50,
+  originCm: [9683.174, 48383.0525],
+  toCm(x, y) { return [x * this.scaleCm + this.originCm[0], y * this.scaleCm + this.originCm[1]]; },
+  // [xmin, ymin, xmax, ymax] de cada hachura estrutural (a hachura 43 do layer é a amostra da legenda).
+  beamSegments: {
+    VB1:[[6.937,53.517,8.367,53.917],[9.567,53.517,15.657,53.917],[16.857,53.517,22.317,53.917],[23.517,53.517,29.917,53.917]],
+    VB2:[[31.117,53.517,37.517,53.917],[38.717,53.517,45.116,53.917],[46.316,53.517,52.716,53.917]],
+    VB3:[[53.916,53.517,60.466,53.917],[61.666,53.517,63.764,53.917]], VB4:[[64.964,53.117,74.185,53.917]],
+    VB5:[[53.916,47.727,60.356,48.107],[61.556,47.727,63.764,48.107],[64.964,47.727,74.185,48.107]], VB6:[[53.916,43.157,59.356,43.537]],
+    VB7:[[53.316,40.457,60.956,40.837]], VB8:[[9.367,36.369,16.337,36.749]], VB9:[[50.416,36.399,53.316,36.779]],
+    VB10:[[9.257,32.149,15.657,32.529],[16.857,32.149,22.317,32.529],[23.517,32.149,29.917,32.529]],
+    VB11:[[31.117,32.149,37.517,32.529],[38.717,32.149,45.116,32.529],[46.316,32.149,50.606,32.529],[50.606,32.149,52.716,32.529]],
+    VB12:[[53.916,32.149,60.356,32.529]], VB13:[[8.457,33.049,8.857,35.959],[8.457,37.159,8.857,41.569]],
+    VB14:[[9.077,42.769,9.477,47.768],[9.077,47.558,9.477,50.717]], VB15:[[15.957,32.939,16.337,36.749]],
+    VB16:[[50.416,32.339,50.796,36.779]], VB17:[[53.126,34.049,53.506,36.589],[53.126,36.589,53.506,40.647],[53.126,40.647,53.506,41.857]],
+    VB18:[[53.126,45.057,53.506,47.207],[53.126,48.407,53.506,50.717]], VB19:[[60.766,34.049,61.146,40.647],[60.766,40.647,61.146,42.857]],
+    VB20:[[60.766,44.057,61.146,46.207],[60.766,49.407,61.146,50.717]], VB21:[[64.174,48.517,64.554,50.717]], VB22:[[74.585,48.627,75.385,50.717]]
+  },
+  piles: [
+    ['B1',6.337,53.317],['B2',8.967,53.317],['B2',8.967,51.317],['B3',16.257,53.317],['B3',16.257,51.317],['B4',22.917,53.317],['B4',22.917,51.317],['B5',30.517,53.317],['B5',30.517,51.317],['B6',38.117,53.317],['B6',38.117,51.317],['B7',45.717,53.317],['B7',45.717,51.317],['B8',53.317,53.317],['B8',53.317,51.317],['B9',61.067,53.317],['B9',61.067,51.317],['B10',64.364,53.317],['B10',64.364,51.317],['B11',74.785,53.317],['B11',74.785,51.317],
+    ['B12',53.317,47.807],['B13',60.957,48.807],['B13',60.957,46.807],['B14',64.364,47.917],['B15',74.785,48.027],['B16',53.317,44.457],['B16',53.317,42.457],['B17',59.957,43.457],['B17',61.957,43.457],['B18',8.967,42.169],['B19',8.767,36.559],['B20',8.657,32.449],['B21',53.317,33.449],['B21',53.317,31.449],['B22',60.957,33.449],['B22',60.957,31.449],['B23',16.257,32.339],['B24',22.917,32.339],['B25',30.517,32.339],['B26',38.117,32.339],['B27',45.717,32.339],
+    ['E1',9.277,47.958],['E2',16.147,36.559],['E3',50.607,36.589]
+  ],
+  // [pilar, centro X, centro Y, largura X, profundidade Y] — layer FO-Pilares.
+  pillars: [
+    ['P1',6.337,53.727,30,19],['P2',8.967,53.727,50,19],['P3',16.257,53.727,30,19],['P4',22.917,53.727,30,19],['P5',30.517,53.727,30,19],['P6',38.117,53.727,30,19],['P7',45.717,53.727,30,19],['P8',53.317,53.617,19,30],['P9',61.067,53.727,30,19],['P10',64.364,53.727,30,19],['P11',75.085,53.727,30,19],
+    ['P12',53.317,47.807,19,30],['P13',60.957,47.807,19,30],['P14',64.364,47.917,30,19],['P15',75.195,48.027,19,30],['P16',53.317,43.457,19,30],['P17',60.957,43.457,19,30],['P18',8.967,42.169,50,19],['P19',8.767,36.559,30,19],['P20',8.657,32.449,19,30],['P21',53.317,32.449,19,30],['P22',60.957,32.449,19,30],['P23',16.257,32.339,30,19],['P24',22.917,32.339,30,19],['P25',30.517,32.339,30,19],['P26',38.117,32.339,30,19],['P27',45.717,32.339,30,19]
+  ]
+};
+
+// Normalizar coordenadas em relação ao centro (em cm)
+const CX = DATA.center[0];
+const CY = DATA.center[1];
+Object.values(DATA.blocos).forEach(b => {
+  b.lx = b.x - CX;
+  b.ly = b.y - CY;
+  b.blockLx = b.lx + (b.blockOffsetX || 0);
+  b.blockLy = b.ly + (b.blockOffsetY || 0);
+  const dxfPillar = DXF_FORM.pillars.find(([id]) => id === b.pilar);
+  if (dxfPillar) {
+    const [x, y] = DXF_FORM.toCm(dxfPillar[1], dxfPillar[2]);
+    b.pilarForma = { x, y, w: dxfPillar[3], d: dxfPillar[4], lx: x - CX, ly: y - CY };
+  }
+});
+DATA.estacasIsoladas.forEach(e => {
+  const dxfPile = DXF_FORM.piles.find(([owner]) => owner === e.id);
+  if (dxfPile) [e.x, e.y] = DXF_FORM.toCm(dxfPile[1], dxfPile[2]);
+  e.lx = e.x - CX;
+  e.ly = e.y - CY;
+});
+
+// --- CENÁRIO THREE.JS ---
+let scene, camera, renderer, controls;
+let groupConcreteBlocks = new THREE.Group();
+let groupConcreteBeams = new THREE.Group();
+let groupPiles = new THREE.Group();
+let groupBlockRebars = new THREE.Group();
+let groupBeamRebars = new THREE.Group();
+let groupPillars = new THREE.Group();
+
+let allObjects = [];
+let selectedElement = null;
+let isIsolated = false;
+let currentExplode = 0;
+let clippingPlanes = [];
+
+const clipPlaneX = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+const clipPlaneY = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+
+let matBlockConcrete, matBeamConcrete, matPileConcrete;
+let matBlockEdges, matBeamEdges;
+
+function init() {
+  const container = document.getElementById('three-container');
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0c10);
+
+  camera = new THREE.PerspectiveCamera(40, width / height, 10, 15000);
+  camera.position.set(1600, -2800, 2200);
+  camera.up.set(0, 0, 1);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.localClippingEnabled = true;
+  container.appendChild(renderer.domElement);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.target.set(0, 0, -30);
+  controls.maxDistance = 10000;
+  controls.minDistance = 50;
+
+  const amb = new THREE.AmbientLight(0xffffff, 0.75);
+  scene.add(amb);
+
+  const dir1 = new THREE.DirectionalLight(0xffffff, 0.85);
+  dir1.position.set(2000, -3000, 3500);
+  scene.add(dir1);
+
+  const dir2 = new THREE.DirectionalLight(0x94b8e6, 0.45);
+  dir2.position.set(-2000, 2000, 1500);
+  scene.add(dir2);
+
+  const dir3 = new THREE.DirectionalLight(0x64748b, 0.3);
+  dir3.position.set(0, 0, -2500);
+  scene.add(dir3);
+
+  const grid = new THREE.GridHelper(5000, 50, 0x2a3245, 0x161a24);
+  grid.rotation.x = Math.PI / 2;
+  grid.position.set(0, 0, -60);
+  scene.add(grid);
+
+  initMaterials();
+  buildStructuralModel();
+
+  scene.add(groupConcreteBlocks);
+  scene.add(groupConcreteBeams);
+  scene.add(groupPiles);
+  scene.add(groupBlockRebars);
+  scene.add(groupBeamRebars);
+  scene.add(groupPillars);
+
+  buildUI();
+  setupRaycaster();
+
+  window.addEventListener('resize', onWindowResize);
+  animate();
+}
+
+function initMaterials() {
+  matBlockConcrete = new THREE.MeshPhysicalMaterial({
+    color: 0xd6d3d1,
+    transparent: true,
+    opacity: 0.35,
+    roughness: 0.35,
+    metalness: 0.05,
+    transmission: 0.25,
+    ior: 1.4,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    clippingPlanes: clippingPlanes
+  });
+
+  matBeamConcrete = new THREE.MeshPhysicalMaterial({
+    color: 0xcbd5e1,
+    transparent: true,
+    opacity: 0.35,
+    roughness: 0.35,
+    metalness: 0.05,
+    transmission: 0.25,
+    ior: 1.4,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    clippingPlanes: clippingPlanes
+  });
+
+  matPileConcrete = new THREE.MeshStandardMaterial({
+    color: 0x64748b,
+    transparent: true,
+    opacity: 0.28,
+    roughness: 0.65,
+    metalness: 0.1,
+    depthWrite: false,
+    clippingPlanes: clippingPlanes
+  });
+
+  matBlockEdges = new THREE.LineBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.6, clippingPlanes: clippingPlanes });
+  matBeamEdges  = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.5, clippingPlanes: clippingPlanes });
+}
+
+function buildStructuralModel() {
+  buildBlocksAndPiles();
+  buildBeams();
+}
+
+// Gaiola de estaca conforme EST-01: C40_7m = 8Ø12.5 + Ø6.3 c/10;
+// C40_2m = 8Ø10.0 + Ø6.3 c/14. A parcela abaixo do corte visual não é desenhada.
+function addPileCage(x, y, zTop, visibleLength, realLength, owner) {
+  const isLong = realLength >= 700;
+  const longDiam = isLong ? 12.5 : 10.0;
+  const hoopDiam = 6.3;
+  const spacing = isLong ? 10 : 14;
+  const cageRadius = 15.5;
+  const longMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.32, metalness: 0.5 });
+  const hoopMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.35, metalness: 0.42 });
+  const cage = new THREE.Group();
+  cage.userData = { bloco: owner, type: 'ARMADURA_ESTACA' };
+
+  for (let i = 0; i < 8; i++) {
+    const angle = i * Math.PI * 2 / 8;
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(barRadiusCm(longDiam), barRadiusCm(longDiam), visibleLength, 8), longMat);
+    bar.rotateX(Math.PI / 2);
+    bar.position.set(x + Math.cos(angle) * cageRadius, y + Math.sin(angle) * cageRadius, zTop - visibleLength / 2);
+    cage.add(bar);
+  }
+  // EST-01: as C40 de 2 m têm exatamente 14 estribos N2; nas C40 de
+  // 7 m o trecho visível conserva a cadência de 10 cm até o corte de 3,5 m.
+  const hoopCount = isLong ? Math.floor(visibleLength / spacing) + 1 : 14;
+  for (let i = 0; i < hoopCount; i++) {
+    const z = isLong
+      ? zTop - Math.min(i * spacing, visibleLength)
+      : zTop - 4 - i * spacing;
+    const pts = Array.from({ length: 17 }, (_, k) => {
+      const a = k * Math.PI * 2 / 16;
+      return new THREE.Vector3(x + Math.cos(a) * cageRadius, y + Math.sin(a) * cageRadius, z);
+    });
+    cage.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.04), 24, barRadiusCm(hoopDiam), 6, true), hoopMat));
+  }
+  groupPiles.add(cage);
+}
+
+function buildBlocksAndPiles() {
+  groupConcreteBlocks.clear();
+  groupPiles.clear();
+  groupBlockRebars.clear();
+  groupPillars.clear();
+
+  Object.values(DATA.blocos).forEach(b => {
+    // 1. Concreto do Bloco com dimensão e orientação exata
+    const geom = new THREE.BoxGeometry(b.dim[0], b.dim[1], b.dim[2]);
+    const mesh = new THREE.Mesh(geom, matBlockConcrete.clone());
+    mesh.position.set(b.blockLx, b.blockLy, -10 - b.dim[2] / 2);
+    mesh.userData = { type: 'BLOCO', id: b.id, data: b };
+    groupConcreteBlocks.add(mesh);
+    allObjects.push(mesh);
+
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geom), matBlockEdges);
+    edges.position.copy(mesh.position);
+    groupConcreteBlocks.add(edges);
+
+    // 2. Estacas do Bloco: centros absolutos das circunferências Ø40 do DXF.
+    const dxfPiles = DXF_FORM.piles.filter(([owner]) => owner === b.id);
+    const pileList = dxfPiles.length ? dxfPiles.map(([, x, y], index) => {
+      const [globalX, globalY] = DXF_FORM.toCm(x, y);
+      return { ...b.estacas[index], globalX, globalY };
+    }) : b.estacas;
+    pileList.forEach(est => {
+      const radius = 20; // Ø40 cm
+      const len = Math.min(est.prof, PILE_VISIBLE_CUT_CM); // corte visual dos primeiros 3,5 m
+      const pGeom = new THREE.CylinderGeometry(radius, radius, len, 24);
+      pGeom.rotateX(Math.PI / 2);
+
+      const pMesh = new THREE.Mesh(pGeom, matPileConcrete);
+      // O topo da estaca coincide com sua cota de arrasamento (CA), -60 cm nas C40_7m.
+      const pileX = est.globalX !== undefined ? est.globalX - CX : b.blockLx + est.rx;
+      const pileY = est.globalY !== undefined ? est.globalY - CY : b.blockLy + est.ry;
+      pMesh.position.set(pileX, pileY, est.ca - len/2);
+      pMesh.userData = { type: 'ESTACA', id: `${b.id}_estaca`, bloco: b.id, profReal: est.prof, profVisivel: len, ca: est.ca, pileConcrete: true };
+      groupPiles.add(pMesh);
+
+      const cEdges = new THREE.LineSegments(new THREE.EdgesGeometry(pGeom, 30), new THREE.LineBasicMaterial({ color: 0x94a3b8 }));
+      cEdges.position.copy(pMesh.position);
+      cEdges.userData = { type: 'CONTORNO_ESTACA' };
+      groupPiles.add(cEdges);
+      addPileCage(pileX, pileY, est.ca, len, est.prof, b.id);
+    });
+
+    // 3. Armaduras FIEIS de cada Bloco
+    buildExactRebarForBlock(b);
+
+    // 4. Arranque do Pilar específico
+    buildExactPillarStarter(b);
+  });
+
+  // Estacas Isoladas E1, E2, E3
+  DATA.estacasIsoladas.forEach(est => {
+    const radius = 20;
+    const len = 200;
+    const pGeom = new THREE.CylinderGeometry(radius, radius, len, 24);
+    pGeom.rotateX(Math.PI / 2);
+
+    const pMesh = new THREE.Mesh(pGeom, matPileConcrete);
+    pMesh.position.set(est.lx, est.ly, est.ca - len/2);
+    pMesh.userData = { type: 'ESTACA_ISOLADA', id: est.id, profReal: est.prof, profVisivel: len, ca: est.ca, pileConcrete: true };
+    groupPiles.add(pMesh);
+
+    const cEdges = new THREE.LineSegments(new THREE.EdgesGeometry(pGeom, 30), new THREE.LineBasicMaterial({ color: 0x38bdf8 }));
+    cEdges.position.copy(pMesh.position);
+    cEdges.userData = { type: 'CONTORNO_ESTACA' };
+    groupPiles.add(cEdges);
+    addPileCage(est.lx, est.ly, est.ca, len, est.prof, est.id);
+  });
+}
+
+// Modelagem exata das armaduras do bloco conforme a prancha específica
+function buildExactRebarForBlock(b) {
+  const spec = b.rebar;
+  const orient = b.orient;
+  const group = new THREE.Group();
+  group.userData = { parentId: b.id };
+
+  const matTirante = new THREE.MeshStandardMaterial({ color: 0xa855f7, roughness: 0.35, metalness: 0.45 });
+  const matSup     = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.35, metalness: 0.45 });
+  const matLatN9   = new THREE.MeshStandardMaterial({ color: 0xec4899, roughness: 0.35, metalness: 0.45 });
+  const matCintas  = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.35, metalness: 0.45 });
+  const matEstribo = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.35, metalness: 0.45 });
+
+  if (orient === "X" || orient === "Y") {
+    // --- BLOCOS DE 2 ESTACAS (160 × 60 cm) ---
+    const isX = orient === "X";
+    const L = Math.max(b.dim[0], b.dim[1]) - 10; // cobrimento de 5 cm por face
+    const w = Math.min(b.dim[0], b.dim[1]) - 10;
+
+    // 1. Tirante Principal Inferior em U com abas verticais de 41 cm para cima
+    const tCfg = spec.tirante;
+    const tDiam = tCfg.diam;
+    const tQuant = tCfg.quant;
+    const tRadius = barRadiusCm(tDiam);
+
+    // Distribuição das barras ao longo da largura interna (-21 a +21 cm no fundo da gaiola de 50 cm)
+    const tStep = (tQuant > 1) ? 42 / (tQuant - 1) : 0;
+    for (let k = 0; k < tQuant; k++) {
+      const off = -21 + k * tStep;
+      let pts;
+      if (isX) {
+        pts = [
+          new THREE.Vector3(-75, off, -13),
+          new THREE.Vector3(-75, off, -53.5),
+          new THREE.Vector3(75, off, -53.5),
+          new THREE.Vector3(75, off, -13)
+        ];
+      } else {
+        pts = [
+          new THREE.Vector3(off, -75, -13),
+          new THREE.Vector3(off, -75, -53.5),
+          new THREE.Vector3(off, 75, -53.5),
+          new THREE.Vector3(off, 75, -13)
+        ];
+      }
+      const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, tRadius, 6, false), matTirante));
+    }
+
+    // 2. Duas Barras Laterais em U vertical longitudinal com abas de 30 cm para cima (N9 / N10)
+    // Conforme correção: ficam no plano vertical longitudinal com as extremidades para cima, paralelas às extremidades laterais!
+    const lCfg = spec.lateralN9;
+    const latQuant = lCfg ? lCfg.quant : 0;
+    const latOffsets = Array.from({ length: latQuant }, (_, i) => latQuant === 1 ? 0 : -23.5 + (47 * i) / (latQuant - 1));
+    latOffsets.forEach(off => {
+      let pts;
+      if (isX) {
+        pts = [
+          new THREE.Vector3(-75, off, -23.5),
+          new THREE.Vector3(-75, off, -53.5),
+          new THREE.Vector3(75, off, -53.5),
+          new THREE.Vector3(75, off, -23.5)
+        ];
+      } else {
+        pts = [
+          new THREE.Vector3(off, -75, -23.5),
+          new THREE.Vector3(off, -75, -53.5),
+          new THREE.Vector3(off, 75, -53.5),
+          new THREE.Vector3(off, 75, -23.5)
+        ];
+      }
+      const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, barRadiusCm(lCfg.diam), 6, false), matLatN9));
+    });
+
+    // 3. Quatro Barras Superiores Longitudinais com ganchos de 9 cm para baixo (distribuídas na largura útil)
+    const supQuant = spec.sup.quant;
+    const supOffsets = Array.from({ length: supQuant }, (_, i) => supQuant === 1 ? 0 : -21 + (42 * i) / (supQuant - 1));
+    supOffsets.forEach(off => {
+      let pts;
+      if (isX) {
+        pts = [
+          new THREE.Vector3(-75, off, -22),
+          new THREE.Vector3(-75, off, -13),
+          new THREE.Vector3(75, off, -13),
+          new THREE.Vector3(75, off, -22)
+        ];
+      } else {
+        pts = [
+          new THREE.Vector3(off, -75, -22),
+          new THREE.Vector3(off, -75, -13),
+          new THREE.Vector3(off, 75, -13),
+          new THREE.Vector3(off, 75, -22)
+        ];
+      }
+      const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, barRadiusCm(spec.sup.diam), 6, false), matSup));
+    });
+
+    // 4. Cintas Perimetrais Horizontais Fechadas (151 × 51 cm)
+    const cCfg = spec.cintasH;
+    const cQuant = cCfg.quant;
+    for (let c = 0; c < cQuant; c++) {
+      const z = -52 + c * cCfg.espac;
+      const lx = isX ? 75.5 : 25.5;
+      const ly = isX ? 25.5 : 75.5;
+      const pts = [
+        new THREE.Vector3(-lx, -ly, z),
+        new THREE.Vector3(lx, -ly, z),
+        new THREE.Vector3(lx, ly, z),
+        new THREE.Vector3(-lx, ly, z)
+      ];
+      const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 32, barRadiusCm(cCfg.diam), 6, true), matCintas));
+    }
+
+    // 5. Estribos Verticais Transversais Fechados
+    const eCfg = spec.estribosV;
+    const eQuant = eCfg.quant;
+    const eStep = 150 / (eQuant - 1);
+    for (let e = 0; e < eQuant; e++) {
+      const loc = -75 + e * eStep;
+      const z0 = -54.5, z1 = -13.5;
+      let pts;
+      if (isX) {
+        pts = [
+          new THREE.Vector3(loc, -25, z0),
+          new THREE.Vector3(loc, 25, z0),
+          new THREE.Vector3(loc, 25, z1),
+          new THREE.Vector3(loc, -25, z1)
+        ];
+      } else {
+        pts = [
+          new THREE.Vector3(-25, loc, z0),
+          new THREE.Vector3(25, loc, z0),
+          new THREE.Vector3(25, loc, z1),
+          new THREE.Vector3(-25, loc, z1)
+        ];
+      }
+      const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, barRadiusCm(eCfg.diam), 6, true), matEstribo));
+    }
+
+  } else {
+    // --- BLOCOS DE 1 ESTACA (60 × 60 × 60 cm) ---
+    // Conforme Pranchas 02, 03, 04 e 05:
+    // Estribos verticais transversais fechados de 49 × 41 cm + Cintas horizontais fechadas de 51 × 51 cm!
+    const eV = spec.estribosV;
+    const cH = spec.cintasH;
+
+    // Estribos verticais (4 unidades distribuídas ocupando a largura total útil de 48 cm)
+    const eVStep = 48 / (eV.quant - 1);
+    for (let i = 0; i < eV.quant; i++) {
+      const x = -24 + i * eVStep;
+      const pts = [
+        new THREE.Vector3(x, -24.5, -53.5),
+        new THREE.Vector3(x, 24.5, -53.5),
+        new THREE.Vector3(x, 24.5, -12.5),
+        new THREE.Vector3(x, -24.5, -12.5)
+      ];
+      const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, barRadiusCm(eV.diam), 6, true), matEstribo));
+    }
+
+    // Cintas perimetrais horizontais fechadas (51 × 51 cm) com bitola e espaçamento da prancha
+    const cRadius = barRadiusCm(cH.diam);
+    for (let j = 0; j < cH.quant; j++) {
+      const z = -52 + j * cH.espac;
+      const pts = [
+        new THREE.Vector3(-25.5, -25.5, z),
+        new THREE.Vector3(25.5, -25.5, z),
+        new THREE.Vector3(25.5, 25.5, z),
+        new THREE.Vector3(-25.5, 25.5, z)
+      ];
+      const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 28, cRadius, 6, true), matCintas));
+    }
+  }
+
+  group.position.set(b.blockLx, b.blockLy, 0);
+  groupBlockRebars.add(group);
+}
+
+// Arranque de pilar específico para cada bloco
+function buildExactPillarStarter(b) {
+  const pilarSpec = b.rebar.pilar;
+  const quant = pilarSpec.quant;
+  const diam = pilarSpec.diam;
+  const alt = pilarSpec.alt;
+
+  const group = new THREE.Group();
+  group.userData = { parentId: b.id };
+  const rebarMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.35, metalness: 0.5 });
+  const stirrupMat = new THREE.MeshStandardMaterial({ color: 0x60a5fa, roughness: 0.4, metalness: 0.3 });
+  const radius = barRadiusCm(diam);
+  const forma = b.pilarForma || { w: 30, d: 30, lx: b.blockLx, ly: b.blockLy };
+  const halfX = Math.max(4, forma.w / 2 - 3);
+  const halfY = Math.max(4, forma.d / 2 - 3);
+
+  let barLocs = [];
+  if (quant === 4) {
+    barLocs = [{x:-halfX, y:-halfY}, {x:halfX, y:-halfY}, {x:halfX, y:halfY}, {x:-halfX, y:halfY}];
+  } else if (quant === 6) {
+    barLocs = [{x:-halfX, y:-halfY}, {x:0, y:-halfY}, {x:halfX, y:-halfY}, {x:-halfX, y:halfY}, {x:0, y:halfY}, {x:halfX, y:halfY}];
+  } else if (quant === 8) {
+    barLocs = [{x:-halfX, y:-halfY}, {x:0, y:-halfY}, {x:halfX, y:-halfY}, {x:halfX, y:0}, {x:halfX, y:halfY}, {x:0, y:halfY}, {x:-halfX, y:halfY}, {x:-halfX, y:0}];
+  } else {
+    barLocs = [{x:-halfX, y:-halfY}, {x:halfX, y:-halfY}, {x:halfX, y:halfY}, {x:-halfX, y:halfY}];
+  }
+
+  // Dobras horizontais de ancoragem de 20 cm na base do bloco
+  barLocs.forEach(loc => {
+    const bendDirX = loc.x >= 0 ? -1 : 1;
+    const pts = [
+      new THREE.Vector3(loc.x + bendDirX * 20, loc.y, -54),
+      new THREE.Vector3(loc.x, loc.y, -54),
+      new THREE.Vector3(loc.x, loc.y, -54 + alt)
+    ];
+    const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.08);
+    group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 20, radius, 6, false), rebarMat));
+  });
+
+  // Estribos de pilar
+  [-40, -25, -10, 5, 20, 35, 50].forEach(z => {
+    if (z < -54 + alt) {
+      const pts = [
+        new THREE.Vector3(-halfX, -halfY, z),
+        new THREE.Vector3(halfX, -halfY, z),
+        new THREE.Vector3(halfX, halfY, z),
+        new THREE.Vector3(-halfX, halfY, z)
+      ];
+      const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 18, barRadiusCm(5.0), 6, true), stirrupMat));
+    }
+  });
+
+  group.position.set(forma.lx, forma.ly, 0);
+  groupPillars.add(group);
+}
+
+function resolveBeamNode(node, zMid) {
+  if (typeof node === 'string') {
+    if (DATA.blocos[node]) {
+      return { pt: new THREE.Vector3(DATA.blocos[node].lx, DATA.blocos[node].ly, zMid), name: node };
+    }
+    const est = DATA.estacasIsoladas.find(e => e.id === node);
+    if (est) {
+      return { pt: new THREE.Vector3(est.lx, est.ly, zMid), name: est.id };
+    }
+  } else if (node && typeof node === 'object') {
+    const lx = node.lx !== undefined ? node.lx : (node.x !== undefined ? (node.x - CX) : 0);
+    const ly = node.ly !== undefined ? node.ly : (node.y !== undefined ? (node.y - CY) : 0);
+    return { pt: new THREE.Vector3(lx, ly, zMid), name: node.name || 'Ponto' };
+  }
+  return { pt: new THREE.Vector3(0, 0, zMid), name: 'Origem' };
+}
+
+function pdfBarGroups(desc = '') {
+  const groups = [];
+  const rx = /(\d+)(?:\s*[x×]\s*(\d+))?\s+N\d+\s+Ø\s*(\d+(?:\.\d+)?)/g;
+  let match;
+  while ((match = rx.exec(desc))) groups.push({ quant: Number(match[1]) * Number(match[2] || 1), diam: Number(match[3]) });
+  return groups;
+}
+
+function buildContinuousBeamRebar(v, dxfSegments, mats) {
+  const zTopo = -10, zBase = zTopo - v.h, zInf = zBase + 4, zSup = zTopo - 4;
+  const path = new THREE.CurvePath();
+  const rects = dxfSegments.map(rect => {
+    const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]); const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
+    const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
+    const a = horizontal ? new THREE.Vector3(x1 - CX, (y1 + y2) / 2 - CY, 0) : new THREE.Vector3((x1 + x2) / 2 - CX, y1 - CY, 0);
+    const b = horizontal ? new THREE.Vector3(x2 - CX, (y1 + y2) / 2 - CY, 0) : new THREE.Vector3((x1 + x2) / 2 - CX, y2 - CY, 0);
+    return { a, b, len: a.distanceTo(b), angle: Math.atan2(b.y - a.y, b.x - a.x) };
+  });
+  rects.forEach((r, index) => { if (index) path.add(new THREE.LineCurve3(rects[index - 1].b, r.a)); path.add(new THREE.LineCurve3(r.a, r.b)); });
+  const group = new THREE.Group(); group.userData = { parentId: v.id };
+  const normal = new THREE.Vector3(-(rects[0].b.y - rects[0].a.y), rects[0].b.x - rects[0].a.x, 0).normalize();
+  const addLongitudinal = (entries, z, material) => {
+    const total = entries.reduce((sum, item) => sum + item.quant, 0); let ordinal = 0;
+    entries.forEach(entry => {
+      for (let i = 0; i < entry.quant; i++, ordinal++) {
+        const offset = total > 1 ? -((v.b - 6) / 2) + ordinal * (v.b - 6) / (total - 1) : 0;
+        const shifted = new THREE.CurvePath();
+        path.curves.forEach(curve => shifted.add(new THREE.LineCurve3(curve.v1.clone().addScaledVector(normal, offset).setZ(z), curve.v2.clone().addScaledVector(normal, offset).setZ(z))));
+        const mesh = new THREE.Mesh(new THREE.TubeGeometry(shifted, 10, barRadiusCm(entry.diam), 6, false), material);
+        mesh.userData = { parentId: v.id, role: 'barra-longitudinal', diam: entry.diam };
+        group.add(mesh);
+      }
+    });
+  };
+  addLongitudinal(pdfBarGroups(v.rebar?.inf?.desc), zInf, mats.inf);
+  addLongitudinal(pdfBarGroups(v.rebar?.sup?.desc), zSup, mats.sup);
+  if (v.rebar?.pele) {
+    const peleEntries = pdfBarGroups(v.rebar.pele.desc);
+    const totalPele = peleEntries.reduce((sum, item) => sum + item.quant, 0);
+    const layers = Math.max(1, Math.round(totalPele / 2));
+    const yOffs = [-((v.b - 6) / 2), ((v.b - 6) / 2)];
+    let pIdx = 0;
+    peleEntries.forEach(entry => {
+      const rPele = barRadiusCm(entry.diam);
+      for (let k = 0; k < entry.quant; k++, pIdx++) {
+        const side = yOffs[pIdx % 2];
+        const layerIdx = Math.floor(pIdx / 2) % layers;
+        const zPele = zInf + (layerIdx + 1) * (zSup - zInf) / (layers + 1);
+        const shifted = new THREE.CurvePath();
+        path.curves.forEach(curve => shifted.add(new THREE.LineCurve3(curve.v1.clone().addScaledVector(normal, side).setZ(zPele), curve.v2.clone().addScaledVector(normal, side).setZ(zPele))));
+        const mesh = new THREE.Mesh(new THREE.TubeGeometry(shifted, 10, rPele, 6, false), mats.pele);
+        mesh.userData = { parentId: v.id, role: 'armadura-pele', diam: entry.diam };
+        group.add(mesh);
+      }
+    });
+  }
+
+  const stirrupCount = Number((v.rebar?.estribos?.desc || '').match(/(\d+)\s+N\d+/)?.[1] || 0);
+  const totalLength = rects.reduce((sum, r) => sum + r.len, 0);
+  let remaining = stirrupCount;
+  rects.forEach((r, index) => {
+    const count = index === rects.length - 1 ? remaining : Math.max(0, Math.round(stirrupCount * r.len / totalLength)); remaining -= count;
+    const local = new THREE.Group(); local.position.copy(r.a.clone().add(r.b).multiplyScalar(.5)); local.rotation.z = r.angle;
+    for (let i = 0; i < count; i++) {
+      const at = count === 1 ? 0 : -r.len / 2 + i * r.len / (count - 1);
+      const yHalf = (v.b - 6) / 2, z0 = zInf, z1 = zSup;
+      const makeLoop = (centerY, halfWidth) => new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(at,centerY-halfWidth,z0),new THREE.Vector3(at,centerY+halfWidth,z0),new THREE.Vector3(at,centerY+halfWidth,z1),new THREE.Vector3(at,centerY-halfWidth,z1)], true, 'catmullrom', .05), 16, barRadiusCm(v.rebar?.estribos?.diam || 5), 6, true), mats.stirrup);
+      if (v.rebar?.estribos?.duplo) { local.add(makeLoop(-yHalf/2, yHalf/2)); local.add(makeLoop(yHalf/2, yHalf/2)); } else local.add(makeLoop(0, yHalf));
+    }
+    group.add(local);
+  });
+  groupBeamRebars.add(group);
+}
+
+function buildBeams() {
+  groupConcreteBeams.clear();
+  groupBeamRebars.clear();
+
+  const rebarInfMat  = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.35, metalness: 0.45 });
+  const rebarSupMat  = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.35, metalness: 0.45 });
+  const rebarPeleMat = new THREE.MeshStandardMaterial({ color: 0xa855f7, roughness: 0.35, metalness: 0.45 });
+  const stirrupMat   = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.35, metalness: 0.45 });
+
+  DATA.vigas.forEach(v => {
+    const bLarg = v.b;
+    const hAlt  = v.h;
+    const zTopo = -10;
+    const zBase = zTopo - hAlt;
+    const zMid  = (zTopo + zBase) / 2;
+
+    const rawList = v.pontos || v.nos || [];
+    const dxfSegments = DXF_FORM.beamSegments[v.id] || [];
+    const segments = dxfSegments.length ? dxfSegments.map((rect, index) => {
+      const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]);
+      const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
+      const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
+      const a = horizontal ? [x1, (y1 + y2) / 2] : [(x1 + x2) / 2, y1];
+      const b = horizontal ? [x2, (y1 + y2) / 2] : [(x1 + x2) / 2, y2];
+      return { a, b, name: `Forma DXF ${index + 1}` };
+    }) : rawList.slice(0, -1).map((node, index) => ({ node, next: rawList[index + 1] }));
+
+    for (const segment of segments) {
+      const r1 = segment.a
+        ? { pt: new THREE.Vector3(segment.a[0] - CX, segment.a[1] - CY, zMid), name: segment.name }
+        : resolveBeamNode(segment.node, zMid);
+      const r2 = segment.b
+        ? { pt: new THREE.Vector3(segment.b[0] - CX, segment.b[1] - CY, zMid), name: segment.name }
+        : resolveBeamNode(segment.next, zMid);
+      const p1 = r1.pt;
+      const p2 = r2.pt;
+
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1.0) continue;
+      const angle = Math.atan2(dy, dx);
+
+      const geom = new THREE.BoxGeometry(dist, bLarg, hAlt);
+      const mesh = new THREE.Mesh(geom, matBeamConcrete.clone());
+      mesh.position.set((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, zMid);
+      mesh.rotation.z = angle;
+      mesh.userData = { type: 'VIGA', id: v.id, secao: v.secao, trecho: `${r1.name}-${r2.name}`, comp: dist, desc: v.desc };
+      groupConcreteBeams.add(mesh);
+      allObjects.push(mesh);
+
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geom), matBeamEdges);
+      edges.position.copy(mesh.position);
+      edges.rotation.copy(mesh.rotation);
+      groupConcreteBeams.add(edges);
+
+      if (!dxfSegments.length) {
+      const beamRebarGroup = new THREE.Group();
+      beamRebarGroup.userData = { parentId: v.id };
+
+      const zInf = zBase + 4;
+      const zSup = zTopo - 4;
+      const yDist = (bLarg - 6) / 2;
+
+      // 1. Barras inferiores longitudinais com diâmetro e quantidade exatos do PDF
+      const numInf = v.rebar && v.rebar.inf ? v.rebar.inf.quant : (bLarg >= 35 ? 3 : 2);
+      const diamInf = v.rebar && v.rebar.inf ? v.rebar.inf.diam : 10.0;
+      const rInf = barRadiusCm(diamInf);
+      const infStep = numInf > 1 ? (yDist * 2) / (numInf - 1) : 0;
+      for (let bIdx = 0; bIdx < numInf; bIdx++) {
+        const yOff = -yDist + bIdx * infStep;
+        const infPts = [
+          new THREE.Vector3(-dist/2 + 4, yOff, zInf - zMid),
+          new THREE.Vector3(dist/2 - 4, yOff, zInf - zMid)
+        ];
+        const curve = new THREE.LineCurve3(infPts[0], infPts[1]);
+        beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 12, rInf, 6, false), rebarInfMat));
+      }
+
+      // 2. Barras superiores longitudinais com diâmetro e quantidade exatos do PDF
+      const numSup = v.rebar && v.rebar.sup ? v.rebar.sup.quant : (bLarg >= 35 ? 3 : 2);
+      const diamSup = v.rebar && v.rebar.sup ? v.rebar.sup.diam : 8.0;
+      const rSup = barRadiusCm(diamSup);
+      const supStep = numSup > 1 ? (yDist * 2) / (numSup - 1) : 0;
+      for (let bIdx = 0; bIdx < numSup; bIdx++) {
+        const yOff = -yDist + bIdx * supStep;
+        const supPts = [
+          new THREE.Vector3(-dist/2 + 4, yOff, zSup - zMid),
+          new THREE.Vector3(dist/2 - 4, yOff, zSup - zMid)
+        ];
+        const curve = new THREE.LineCurve3(supPts[0], supPts[1]);
+        beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 12, rSup, 6, false), rebarSupMat));
+      }
+
+      // 3. Armadura de Pele (vigas de altura h >= 45 cm, ex: VB1, VB2, VB13)
+      if (v.rebar && v.rebar.pele) {
+        const pelePerFace = Math.max(1, Math.ceil(v.rebar.pele.quant / 2));
+        const peleLevels = Array.from({ length: pelePerFace }, (_, i) => pelePerFace === 1 ? 0 : -9 + (18 * i) / (pelePerFace - 1));
+        const rPele = barRadiusCm(v.rebar.pele.diam);
+        [-yDist, yDist].forEach(yOff => {
+          peleLevels.forEach(zOff => {
+            const pelePts = [
+              new THREE.Vector3(-dist/2 + 4, yOff, zOff),
+              new THREE.Vector3(dist/2 - 4, yOff, zOff)
+            ];
+            const curve = new THREE.LineCurve3(pelePts[0], pelePts[1]);
+            beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 12, rPele, 6, false), rebarPeleMat));
+          });
+        });
+      }
+
+      // 4. Estribos fechados com espaçamento exato da prancha
+      const stirrupSpacing = v.rebar && v.rebar.estribos ? v.rebar.estribos.espac : 15;
+      const stirrupDiam = v.rebar && v.rebar.estribos ? v.rebar.estribos.diam : 5.0;
+      const isDuplo = v.rebar && v.rebar.estribos && v.rebar.estribos.duplo;
+      const numStirrups = Math.max(2, Math.floor((dist - 12) / stirrupSpacing));
+      const step = (dist - 12) / (numStirrups - 1);
+
+      for (let s = 0; s < numStirrups; s++) {
+        const sX = -dist/2 + 6 + s * step;
+
+        if (isDuplo) {
+          // Estribos duplos em paralelo para vigas largas de 40 cm (VB4 e VB22)
+          [-yDist/2, yDist/2].forEach(yC => {
+            const halfW = yDist / 2;
+            const pts = [
+              new THREE.Vector3(sX, yC - halfW, zInf - zMid),
+              new THREE.Vector3(sX, yC + halfW, zInf - zMid),
+              new THREE.Vector3(sX, yC + halfW, zSup - zMid),
+              new THREE.Vector3(sX, yC - halfW, zSup - zMid)
+            ];
+            const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+            beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 20, barRadiusCm(stirrupDiam), 6, true), stirrupMat));
+          });
+        } else {
+          // Estribo retangular fechado padrão
+          const pts = [
+            new THREE.Vector3(sX, -yDist, zInf - zMid),
+            new THREE.Vector3(sX, yDist, zInf - zMid),
+            new THREE.Vector3(sX, yDist, zSup - zMid),
+            new THREE.Vector3(sX, -yDist, zSup - zMid)
+          ];
+          const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
+          beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 20, barRadiusCm(stirrupDiam), 6, true), stirrupMat));
+        }
+      }
+
+      beamRebarGroup.position.copy(mesh.position);
+      beamRebarGroup.rotation.copy(mesh.rotation);
+      groupBeamRebars.add(beamRebarGroup);
+      }
+    }
+    if (dxfSegments.length) buildContinuousBeamRebar(v, dxfSegments, { inf: rebarInfMat, sup: rebarSupMat, pele: rebarPeleMat, stirrup: stirrupMat });
+  });
+}
+
+function buildUI() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.getElementById('tabCamadas').style.display = btn.dataset.tab === 'camadas' ? 'flex' : 'none';
+      document.getElementById('tabElementos').style.display = btn.dataset.tab === 'elementos' ? 'flex' : 'none';
+      document.getElementById('tabResumo').style.display = btn.dataset.tab === 'resumo' ? 'flex' : 'none';
+    });
+  });
+
+  setupSlider('opacityBlocos', 'outBlocos', val => {
+    groupConcreteBlocks.traverse(c => { if (c.material && c.isMesh) c.material.opacity = val; });
+  });
+  setupSlider('opacityVigas', 'outVigas', val => {
+    groupConcreteBeams.traverse(c => { if (c.material && c.isMesh) c.material.opacity = val; });
+  });
+  setupSlider('opacityEstacas', 'outEstacas', val => {
+    // A transparência é exclusiva do concreto: barras, estribos e contornos
+    // ficam opacos para permanecerem verificáveis dentro das estacas.
+    groupPiles.traverse(c => {
+      if (c.isMesh && c.userData?.pileConcrete && c.material) {
+        c.material.transparent = true;
+        c.material.depthWrite = false;
+        c.material.opacity = val;
+        c.material.needsUpdate = true;
+      }
+    });
+  });
+
+  const explodeSlider = document.getElementById('explodeRange');
+  const explodeOut = document.getElementById('outExplode');
+  explodeSlider.addEventListener('input', e => {
+    currentExplode = parseFloat(e.target.value);
+    explodeOut.textContent = e.target.value + ' cm';
+    groupBlockRebars.position.z = currentExplode * 0.4;
+    groupBeamRebars.position.z  = currentExplode * 0.4;
+  });
+
+  setupToggle('chkConcreteBlocks', groupConcreteBlocks);
+  setupToggle('chkConcreteBeams', groupConcreteBeams);
+  setupToggle('chkPiles', groupPiles);
+  setupToggle('chkBlockRebars', groupBlockRebars);
+  setupToggle('chkBeamRebars', groupBeamRebars);
+  setupToggle('chkPillars', groupPillars);
+
+  document.querySelectorAll('#quickViews button[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#quickViews button[data-view]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setCameraView(btn.dataset.view);
+    });
+  });
+
+  document.getElementById('btnResetView').addEventListener('click', () => {
+    resetIsolation();
+    setCameraView('iso');
+  });
+
+  document.getElementById('btnCutX').addEventListener('click', () => setClipping('X'));
+  document.getElementById('btnCutY').addEventListener('click', () => setClipping('Y'));
+  document.getElementById('btnCutOff').addEventListener('click', () => setClipping(null));
+
+  document.getElementById('btnCloseFocus').addEventListener('click', () => {
+    document.getElementById('focusInspector').style.display = 'none';
+    resetIsolation();
+  });
+  document.getElementById('btnIsolate').addEventListener('click', () => {
+    if (selectedElement) isolateElement(selectedElement);
+  });
+  document.getElementById('btnShowAll').addEventListener('click', () => {
+    resetIsolation();
+  });
+
+    // --- Handlers do Modal de Resumo de Aço ---
+  const modalSteel = document.getElementById('modalSteelSummary');
+  const openModal = () => { if (modalSteel) modalSteel.style.display = 'flex'; };
+  const closeModal = () => { if (modalSteel) modalSteel.style.display = 'none'; };
+
+  const btnOpen1 = document.getElementById('btnOpenSteelModal');
+  if (btnOpen1) btnOpen1.addEventListener('click', openModal);
+
+  const btnOpen2 = document.getElementById('btnOpenSteelModalSidebar');
+  if (btnOpen2) btnOpen2.addEventListener('click', openModal);
+
+  const btnClose1 = document.getElementById('btnCloseSteelModal');
+  if (btnClose1) btnClose1.addEventListener('click', closeModal);
+
+  const btnClose2 = document.getElementById('btnCloseSteelModalFooter');
+  if (btnClose2) btnClose2.addEventListener('click', closeModal);
+
+  if (modalSteel) {
+    modalSteel.addEventListener('click', e => {
+      if (e.target === modalSteel) closeModal();
+    });
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const targetId = btn.dataset.modaltab;
+      document.querySelectorAll('.modal-pane').forEach(p => {
+        p.style.display = (p.id === targetId) ? 'block' : 'none';
+      });
+    });
+  });
+
+  buildElementChips();
+}
+
+function setupSlider(sliderId, outputId, callback) {
+  const s = document.getElementById(sliderId);
+  const o = document.getElementById(outputId);
+  s.addEventListener('input', e => {
+    const val = e.target.value / 100;
+    o.textContent = e.target.value + '%';
+    callback(val);
+  });
+}
+
+function setupToggle(chkId, group) {
+  document.getElementById(chkId).addEventListener('change', e => {
+    group.visible = e.target.checked;
+  });
+}
+
+function buildElementChips() {
+  const blockContainer = document.getElementById('blockChips');
+  const beamContainer  = document.getElementById('beamChips');
+
+  blockContainer.innerHTML = '';
+  beamContainer.innerHTML = '';
+
+  Object.values(DATA.blocos).forEach(b => {
+    const chip = document.createElement('div');
+    chip.className = 'element-chip';
+    chip.id = `chip_${b.id}`;
+    chip.textContent = b.id;
+    chip.title = `${b.id} (${b.dim[0]}x${b.dim[1]} cm)`;
+    chip.addEventListener('click', () => inspectElement('BLOCO', b.id));
+    blockContainer.appendChild(chip);
+  });
+
+  DATA.vigas.forEach(v => {
+    const chip = document.createElement('div');
+    chip.className = 'element-chip';
+    chip.id = `chip_${v.id}`;
+    chip.textContent = v.id;
+    chip.title = `${v.id} (${v.secao})`;
+    chip.addEventListener('click', () => inspectElement('VIGA', v.id));
+    beamContainer.appendChild(chip);
+  });
+
+  document.getElementById('elementSearch').addEventListener('input', e => {
+    const q = e.target.value.toUpperCase().trim();
+    document.querySelectorAll('.element-chip').forEach(c => {
+      c.style.display = c.textContent.includes(q) ? 'block' : 'none';
+    });
+  });
+}
+
+function inspectElement(type, id) {
+  selectedElement = { type, id };
+  document.querySelectorAll('.element-chip').forEach(c => c.classList.remove('selected'));
+  const chip = document.getElementById(`chip_${id}`);
+  if (chip) chip.classList.add('selected');
+
+  const card = document.getElementById('focusInspector');
+  const title = document.getElementById('focusTitle');
+  const subtitle = document.getElementById('focusSubtitle');
+  const body = document.getElementById('focusBody');
+
+  card.style.display = 'block';
+
+  if (type === 'BLOCO') {
+    const b = DATA.blocos[id];
+    title.textContent = `Bloco ${b.id}`;
+    const orientTxt = b.orient === 'X' ? 'Longitudinal em X' : (b.orient === 'Y' ? 'Transversal em Y' : 'Centrado');
+    subtitle.textContent = `${b.dim[0]} × ${b.dim[1]} × ${b.dim[2]} cm · ${b.estacas.length} Estaca(s) · ${orientTxt}`;
+
+    let rebarDetails = '';
+    const r = b.rebar;
+    if (b.orient === 'X' || b.orient === 'Y') {
+      rebarDetails = `
+        <div><strong>Tirante Inferior Principal:</strong> ${r.tirante.quant} Ø${r.tirante.diam.toFixed(1)} c/${r.tirante.espac} cm (em U com abas de 41 cm)</div>
+        <div><strong>Laterais em U Vertical:</strong> ${r.lateralN9.quant} Ø${r.lateralN9.diam.toFixed(1)} (abas de 30 cm para cima)</div>
+        <div><strong>Superior Longitudinal:</strong> ${r.sup.quant} Ø${r.sup.diam.toFixed(1)} (ganchos de 9 cm para baixo)</div>
+        <div><strong>Cintas Perimetrais:</strong> ${r.cintasH.quant} Ø${r.cintasH.diam.toFixed(1)} c/${r.cintasH.espac} cm (fechadas 151×51 cm)</div>
+        <div><strong>Estribos Transversais:</strong> ${r.estribosV.quant} Ø${r.estribosV.diam.toFixed(1)} fechados (50×41 cm)</div>
+        <div><strong>Arranque do Pilar ${b.pilar}:</strong> ${r.pilar.quant} Ø${r.pilar.diam.toFixed(1)} (alt=${r.pilar.alt || 105} cm) + estribos</div>
+      `;
+    } else {
+      rebarDetails = `
+        <div><strong>Estribos Verticais:</strong> ${r.estribosV.quant} Ø${r.estribosV.diam.toFixed(1)} fechados (49×41 cm)</div>
+        <div><strong>Cintas Perimetrais:</strong> ${r.cintasH.quant} Ø${r.cintasH.diam.toFixed(1)} c/${r.cintasH.espac} cm (fechadas 51×51 cm)</div>
+        <div><strong>Arranque do Pilar ${b.pilar}:</strong> ${r.pilar.quant} Ø${r.pilar.diam.toFixed(1)} alt=${r.pilar.alt} cm (dobra 20 cm)</div>
+      `;
+    }
+
+    body.innerHTML = `
+      <div><strong>Locação Global:</strong> X = ${(b.x/100).toFixed(2)} m · Y = ${(b.y/100).toFixed(2)} m</div>
+      <div><strong>Arrasamento:</strong> CA: -0.60 m · Nível do topo: -0.10 m (Cota Fiel às Pranchas 02-08)</div>
+      <div><strong>Estacas:</strong> ${b.estacas.length} × Ø40 cm C40 (prof. 7,0 m; corte visual de 3,5 m)</div>
+      ${rebarDetails}
+    `;
+
+    const targetPos = new THREE.Vector3(b.blockLx, b.blockLy, -40);
+    animateCameraTo(new THREE.Vector3(b.blockLx + 220, b.blockLy - 320, 220), targetPos);
+    document.getElementById('viewStateBadge').textContent = `Foco no Bloco ${b.id}`;
+
+  } else if (type === 'VIGA') {
+    const v = DATA.vigas.find(item => item.id === id);
+    title.textContent = `Viga Baldrame ${v.id}`;
+    subtitle.textContent = `Seção ${v.secao} cm · Nível -10 cm`;
+
+    const rawList = v.pontos || v.nos || [];
+    const rA = resolveBeamNode(rawList[0], -25);
+    const rB = resolveBeamNode(rawList[rawList.length - 1], -25);
+    const midX = (rA.pt.x + rB.pt.x) / 2;
+    const midY = (rA.pt.y + rB.pt.y) / 2;
+
+    const nosLabels = rawList.map(item => typeof item === 'string' ? item : (item.name || 'Ponto Intermed.'));
+    const interligados = nosLabels.join(' ➔ ');
+
+    const rb = v.rebar || {};
+    body.innerHTML = `
+      <div><strong>Apoios / Trechos:</strong> ${interligados}</div>
+      <div><strong>Função / Descrição:</strong> ${v.desc || 'Viga Baldrame Estrutural'}</div>
+      <div><strong>Dimensões:</strong> Largura ${v.b} cm · Altura ${v.h} cm · Nível do Topo -10 cm</div>
+      <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px;">
+        <div><strong>Armadura Inferior (Positiva):</strong> ${rb.inf ? rb.inf.desc : '2 a 3 Ø10.0'}</div>
+        <div><strong>Armadura Superior (Negativa/Porta-estribos):</strong> ${rb.sup ? rb.sup.desc : '2 a 3 Ø8.0'}</div>
+        <div><strong>Armadura de Pele:</strong> ${rb.pele ? rb.pele.desc : 'Não exigida (h < 45 cm)'}</div>
+        <div><strong>Estribos:</strong> ${rb.estribos ? rb.estribos.desc : 'Ø5.0 c/15 cm'}</div>
+      </div>
+    `;
+
+    const targetPos = new THREE.Vector3(midX, midY, -25);
+    animateCameraTo(new THREE.Vector3(midX + 350, midY - 450, 350), targetPos);
+    document.getElementById('viewStateBadge').textContent = `Foco na Viga ${v.id}`;
+  }
+}
+
+function isolateElement(elem) {
+  isIsolated = true;
+  document.getElementById('btnIsolate').classList.add('active');
+
+  groupConcreteBlocks.children.forEach(c => {
+    if (c.userData && c.userData.type === 'BLOCO') {
+      c.visible = c.userData.id === elem.id;
+    }
+  });
+
+  groupConcreteBeams.children.forEach(c => {
+    if (c.userData && c.userData.type === 'VIGA') {
+      c.visible = c.userData.id === elem.id;
+    }
+  });
+
+  groupBlockRebars.children.forEach(c => {
+    c.visible = c.userData.parentId === elem.id;
+  });
+
+  groupBeamRebars.children.forEach(c => {
+    c.visible = c.userData.parentId === elem.id;
+  });
+
+  groupPillars.children.forEach(c => {
+    c.visible = c.userData.parentId === elem.id;
+  });
+
+  groupPiles.children.forEach(c => {
+    c.visible = c.userData.bloco === elem.id;
+  });
+}
+
+function resetIsolation() {
+  isIsolated = false;
+  document.getElementById('btnIsolate').classList.remove('active');
+
+  groupConcreteBlocks.children.forEach(c => c.visible = true);
+  groupConcreteBeams.children.forEach(c => c.visible = true);
+  groupBlockRebars.children.forEach(c => c.visible = true);
+  groupBeamRebars.children.forEach(c => c.visible = true);
+  groupPillars.children.forEach(c => c.visible = true);
+  groupPiles.children.forEach(c => c.visible = true);
+
+  document.getElementById('viewStateBadge').textContent = 'Visão Geral da Obra';
+}
+
+function setCameraView(viewName) {
+  const target = new THREE.Vector3(0, 0, -30);
+  const badge = document.getElementById('viewStateBadge');
+
+  switch(viewName) {
+    case 'iso':
+      badge.textContent = 'Visão Geral Isométrica';
+      animateCameraTo(new THREE.Vector3(1600, -2800, 2200), target);
+      break;
+
+    case 'planta':
+      badge.textContent = 'Planta de Fôrma Geral';
+      animateCameraTo(new THREE.Vector3(0, 0, 3800), target, new THREE.Vector3(0, 1, 0));
+      break;
+
+    case 'norte':
+      badge.textContent = 'Elevação Norte (Longitudinal)';
+      animateCameraTo(new THREE.Vector3(0, -3500, -30), target, new THREE.Vector3(0, 0, 1));
+      break;
+
+    case 'oeste':
+      badge.textContent = 'Elevação Oeste (Transversal)';
+      animateCameraTo(new THREE.Vector3(-3500, 0, -30), target, new THREE.Vector3(0, 0, 1));
+      break;
+
+    case 'estacas':
+      badge.textContent = 'Apoio / Fuste das Estacas';
+      animateCameraTo(new THREE.Vector3(0, -1800, -1600), new THREE.Vector3(0, 0, -200), new THREE.Vector3(0, 1, 0));
+      break;
+  }
+}
+
+let cameraTween = null;
+function animateCameraTo(targetPos, targetLookAt, targetUp = new THREE.Vector3(0, 0, 1)) {
+  const startPos = camera.position.clone();
+  const startLookAt = controls.target.clone();
+  const startUp = camera.up.clone();
+  const duration = 750;
+  const startTime = performance.now();
+
+  if (cameraTween) cancelAnimationFrame(cameraTween);
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+
+    camera.position.lerpVectors(startPos, targetPos, ease);
+    controls.target.lerpVectors(startLookAt, targetLookAt, ease);
+    camera.up.lerpVectors(startUp, targetUp, ease);
+    controls.update();
+
+    if (progress < 1) {
+      cameraTween = requestAnimationFrame(step);
+    }
+  }
+  cameraTween = requestAnimationFrame(step);
+}
+
+function setClipping(axis) {
+  document.getElementById('btnCutX').classList.toggle('active', axis === 'X');
+  document.getElementById('btnCutY').classList.toggle('active', axis === 'Y');
+  document.getElementById('btnCutOff').classList.toggle('active', axis === null);
+
+  clippingPlanes.length = 0;
+  if (axis === 'X') clippingPlanes.push(clipPlaneX);
+  if (axis === 'Y') clippingPlanes.push(clipPlaneY);
+
+  scene.traverse(c => {
+    if (c.material && c.isMesh) {
+      c.material.clippingPlanes = clippingPlanes;
+      c.material.needsUpdate = true;
+    }
+  });
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+function setupRaycaster() {
+  const container = document.getElementById('viewportArea');
+
+  container.addEventListener('pointermove', e => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(allObjects, false);
+
+    if (hits.length > 0 && hits[0].object.userData.type) {
+      const data = hits[0].object.userData;
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 20) + 'px';
+
+      if (data.type === 'BLOCO') {
+        tooltip.innerHTML = `<strong>Bloco ${data.id}</strong> (${data.data.tipo})<br><span style="color:var(--muted)">Clique para inspecionar</span>`;
+      } else if (data.type === 'VIGA') {
+        tooltip.innerHTML = `<strong>Viga ${data.id}</strong> (${data.secao})<br><span style="color:var(--muted)">Trecho: ${data.trecho}</span>`;
+      }
+      return;
+    }
+    tooltip.style.display = 'none';
+  });
+
+  let pStartX = 0, pStartY = 0;
+  container.addEventListener('pointerdown', e => {
+    pStartX = e.clientX;
+    pStartY = e.clientY;
+  });
+
+  container.addEventListener('pointerup', e => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    const dist = Math.hypot(e.clientX - pStartX, e.clientY - pStartY);
+    if (dist > 7) return; // Se arrastou para girar/orbitar, não seleciona
+
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(allObjects, false);
+
+    if (hits.length > 0 && hits[0].object.userData.type) {
+      const data = hits[0].object.userData;
+      inspectElement(data.type, data.id);
+    }
+  });
+}
+
+function onWindowResize() {
+  const container = document.getElementById('three-container');
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+
+<!-- MODAL: QUADRO COMPLETO DE RESUMO DE AÇO E QUANTITATIVOS -->
+<div class="modal-backdrop" id="modalSteelSummary">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">QUADRO GERAL DE QUANTITATIVOS: AÇO, CONCRETO E FÔRMAS</div>
+        <div class="modal-subtitle">AION-100 · Projeto Estrutural de Fundações e Baldrames · Fiel às Pranchas Oficiais 01 a 08</div>
+      </div>
+      <button type="button" class="btn-close-focus" id="btnCloseSteelModal" title="Fechar Janela" style="font-size:20px; padding:4px 8px;">✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button type="button" class="modal-tab-btn active" data-modaltab="modalGeral">Consolidado de Aço</button>
+      <button type="button" class="modal-tab-btn" data-modaltab="modalConcreto">Resumo de Concreto & Fôrmas</button>
+      <button type="button" class="modal-tab-btn" data-modaltab="modalBlocos">Blocos de Fundação</button>
+      <button type="button" class="modal-tab-btn" data-modaltab="modalVigas">Vigas Baldrames</button>
+      <button type="button" class="modal-tab-btn" data-modaltab="modalEstacas">Estacas Escavadas C40</button>
+      <button type="button" class="modal-tab-btn" data-modaltab="modalPranchas">Resumo por Prancha</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- ABA MODAL 1: CONSOLIDADO DE AÇO -->
+      <div id="modalGeral" class="modal-pane">
+        <div class="notice-box" style="margin-bottom:14px;">
+          <strong>Consolidação Geral do Aço (NBR 6118 / NBR 6122):</strong><br>
+          Valores transcritos diretamente dos resumos das pranchas oficiais EST-01 a EST-08. O aço CA-50 e CA-60 inclui a margem técnica de 10% estabelecida no projeto estrutural.
+        </div>
+
+        <table class="table-steel-full">
+          <thead>
+            <tr>
+              <th>Bitola (mm)</th>
+              <th>Aço</th>
+              <th style="text-align:right;">Blocos (m)</th>
+              <th style="text-align:right;">Vigas (m)</th>
+              <th style="text-align:right;">Comp. Total (m)</th>
+              <th style="text-align:right;">Peso + 10% (kg)</th>
+              <th style="text-align:right;">% do Peso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ø 5,0 mm</strong></td>
+              <td><span class="badge-ca60">CA-60</span></td>
+              <td style="text-align:right;">785,3 m</td>
+              <td style="text-align:right;">829,4 m</td>
+              <td style="text-align:right; font-weight:700;">1.614,7 m</td>
+              <td style="text-align:right; font-weight:700; color:#fbbf24;">273,7 kg</td>
+              <td style="text-align:right; color:var(--muted);">19,3%</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 6,3 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">75,6 m</td>
+              <td style="text-align:right;">181,8 m</td>
+              <td style="text-align:right; font-weight:700;">257,4 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">69,2 kg</td>
+              <td style="text-align:right; color:var(--muted);">4,9%</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 8,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">219,7 m</td>
+              <td style="text-align:right;">365,2 m</td>
+              <td style="text-align:right; font-weight:700;">584,9 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">253,7 kg</td>
+              <td style="text-align:right; color:var(--muted);">17,9%</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 10,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">162,1 m</td>
+              <td style="text-align:right;">225,9 m</td>
+              <td style="text-align:right; font-weight:700;">388,0 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">263,0 kg</td>
+              <td style="text-align:right; color:var(--muted);">18,6%</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 12,5 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">69,6 m</td>
+              <td style="text-align:right;">121,5 m</td>
+              <td style="text-align:right; font-weight:700;">191,1 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">202,3 kg</td>
+              <td style="text-align:right; color:var(--muted);">14,3%</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 16,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">97,8 m</td>
+              <td style="text-align:right;">105,2 m</td>
+              <td style="text-align:right; font-weight:700;">203,0 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">352,1 kg</td>
+              <td style="text-align:right; color:var(--muted);">24,9%</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" style="color:#38bdf8;">SUBTOTAL CA-50 (BALDRAMES + BLOCOS)</td>
+              <td style="text-align:right;">1.624,4 m</td>
+              <td style="text-align:right; color:#38bdf8;">1.140,4 kg</td>
+              <td style="text-align:right;">80,6%</td>
+            </tr>
+            <tr>
+              <td colspan="4" style="color:#fbbf24;">SUBTOTAL CA-60 (BALDRAMES + BLOCOS)</td>
+              <td style="text-align:right;">1.614,7 m</td>
+              <td style="text-align:right; color:#fbbf24;">273,7 kg</td>
+              <td style="text-align:right;">19,4%</td>
+            </tr>
+            <tr style="border-top:2px solid var(--accent); font-size:12.5px;">
+              <td colspan="4" style="color:var(--accent); font-weight:800;">TOTAL BALDRAME + BLOCOS</td>
+              <td style="text-align:right; font-weight:800;">3.239,1 m</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">1.414,1 kg</td>
+              <td style="text-align:right; font-weight:800;">100,0%</td>
+            </tr>
+            <tr style="font-size:12px;">
+              <td colspan="4" style="color:#94a3b8;">ESTACAS ESCAVADAS C40 (45 UNIDADES)</td>
+              <td style="text-align:right;">5.058,0 m</td>
+              <td style="text-align:right; font-weight:700; color:#94a3b8;">2.632,2 kg</td>
+              <td style="text-align:right;">—</td>
+            </tr>
+            <tr style="border-top:2px solid #38bdf8; font-size:13px;">
+              <td colspan="4" style="color:#38bdf8; font-weight:800;">TOTAL GERAL DE AÇO DA OBRA</td>
+              <td style="text-align:right; font-weight:800;">8.297,1 m</td>
+              <td style="text-align:right; font-weight:800; color:#38bdf8;">4.046,3 kg</td>
+              <td style="text-align:right; font-weight:800;">—</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px;">
+          <div class="steel-summary-card">
+            <h3>Concreto C-25 Total</h3>
+            <p style="font-size:15px; font-weight:800; color:var(--accent); margin:4px 0;">55,24 m³</p>
+            <p>17,54 m³ (Baldrames/Blocos) + 37,70 m³ (Estacas C40)</p>
+          </div>
+          <div class="steel-summary-card">
+            <h3>Área Total de Fôrmas</h3>
+            <p style="font-size:15px; font-weight:800; color:var(--accent); margin:4px 0;">143,34 m²</p>
+            <p>86,46 m² (Vigas Baldrames) + 56,88 m² (Blocos)</p>
+          </div>
+          <div class="steel-summary-card">
+            <h3>Taxa Média de Aço</h3>
+            <p style="font-size:15px; font-weight:800; color:var(--accent); margin:4px 0;">73,3 kg/m³</p>
+            <p>Vigas: 118,7 kg/m³ · Blocos: 56,3 kg/m³ · Estacas: 69,8 kg/m³</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA MODAL 2: RESUMO DE CONCRETO & FÔRMAS -->
+      <div id="modalConcreto" class="modal-pane" style="display:none;">
+        <div class="notice-box" style="margin-bottom:14px;">
+          <strong>Quadro Completo de Concreto & Fôrmas (NBR 12655 / NBR 6118 / NBR 6122):</strong><br>
+          • Concreto Estrutural C-25 (fck ≥ 25 MPa) para todos os blocos, vigas baldrames e estacas escavadas.<br>
+          • Lastro de concreto magro C-10 (fck ≥ 10 MPa) com espessura mínima de 5 cm sob todas as bases de blocos e vigas.<br>
+          • Fôrmas de madeira/compensado resinado de 14 mm para vigas baldrames e blocos de coroamento.
+        </div>
+
+        <table class="table-steel-full">
+          <thead>
+            <tr>
+              <th>Elemento / Conjunto</th>
+              <th>Prancha</th>
+              <th>Classe / fck</th>
+              <th style="text-align:right;">Volume Concreto (m³)</th>
+              <th style="text-align:right;">Área Fôrmas (m²)</th>
+              <th>Slump (cm)</th>
+              <th style="text-align:right;">Taxa Aço (kg/m³)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vigas Baldrames VB1 a VB16</strong></td>
+              <td>EST-07</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">5,95 m³</td>
+              <td style="text-align:right; font-weight:700;">74,85 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">103,8 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>Vigas Baldrames VB17 a VB22</strong></td>
+              <td>EST-08</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">0,89 m³</td>
+              <td style="text-align:right; font-weight:700;">11,61 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">218,8 kg/m³</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.02);">
+              <td><strong>Subtotal Vigas Baldrames (VB1..VB22)</strong></td>
+              <td>EST-07/08</td>
+              <td>C-25</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">6,84 m³</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">86,46 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; font-weight:800; color:#38bdf8;">118,7 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>Blocos de Fundação B1 a B7</strong></td>
+              <td>EST-02</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">3,51 m³</td>
+              <td style="text-align:right; font-weight:700;">17,28 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">56,0 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>Blocos de Fundação B8 a B15</strong></td>
+              <td>EST-03</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">3,36 m³</td>
+              <td style="text-align:right; font-weight:700;">17,52 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">48,9 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>Blocos de Fundação B16 a B23</strong></td>
+              <td>EST-04</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">3,02 m³</td>
+              <td style="text-align:right; font-weight:700;">16,32 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">56,8 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>Blocos de Fundação B24 a B27</strong></td>
+              <td>EST-05</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">0,81 m³</td>
+              <td style="text-align:right; font-weight:700;">5,76 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">85,8 kg/m³</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.02);">
+              <td><strong>Subtotal Blocos de Fundação (B1..B27)</strong></td>
+              <td>EST-02..05</td>
+              <td>C-25</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">10,70 m³</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">56,88 m²</td>
+              <td>12 ± 2 cm</td>
+              <td style="text-align:right; font-weight:800; color:#38bdf8;">56,3 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>42 Estacas C40 Profundas (7,0 m)</strong></td>
+              <td>EST-01</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">36,95 m³</td>
+              <td style="text-align:right; color:var(--muted);">Escavado no solo</td>
+              <td>18 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">69,9 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>3 Estacas C40 Rasas (2,0 m)</strong></td>
+              <td>EST-01</td>
+              <td>C-25 (fck = 25 MPa)</td>
+              <td style="text-align:right; font-weight:700;">0,75 m³</td>
+              <td style="text-align:right; color:var(--muted);">Escavado no solo</td>
+              <td>18 ± 2 cm</td>
+              <td style="text-align:right; color:#38bdf8;">65,4 kg/m³</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.02);">
+              <td><strong>Subtotal Estacas C40 (45 unidades)</strong></td>
+              <td>EST-01</td>
+              <td>C-25</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">37,70 m³</td>
+              <td style="text-align:right; color:var(--muted);">—</td>
+              <td>18 ± 2 cm</td>
+              <td style="text-align:right; font-weight:800; color:#38bdf8;">69,8 kg/m³</td>
+            </tr>
+            <tr>
+              <td><strong>Lastro de Regularização (5 cm)</strong></td>
+              <td>EST-01..08</td>
+              <td>C-10 (fck = 10 MPa)</td>
+              <td style="text-align:right; font-weight:700;">~1,55 m³</td>
+              <td style="text-align:right; color:var(--muted);">Fundo de vala</td>
+              <td>10 ± 2 cm</td>
+              <td style="text-align:right; color:var(--muted);">—</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="font-size:12.5px; border-top:2px solid var(--accent);">
+              <td colspan="3" style="color:var(--accent); font-weight:800;">TOTAL CONCRETO ESTRUTURAL C-25</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">55,24 m³</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">143,34 m²</td>
+              <td>—</td>
+              <td style="text-align:right; font-weight:800; color:#38bdf8;">73,3 kg/m³</td>
+            </tr>
+            <tr style="font-size:12px;">
+              <td colspan="3" style="color:var(--muted);">TOTAL GERAL DE CONCRETO (C-25 + C-10 MAGRO)</td>
+              <td style="text-align:right; font-weight:700; color:#fff;">~56,79 m³</td>
+              <td colspan="3" style="color:var(--muted); font-size:11px;">Fôrmas: 143,34 m² (Madeira / Compensado)</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="steel-summary-card">
+            <h3>Critérios de Controle Tecnológico (NBR 12655)</h3>
+            <p>• Concreto dosado em central com controle rigoroso de slump e fck aos 7 e 28 dias.</p>
+            <p>• Adensamento mecânico com vibrador de agulha Ø35 mm nas vigas e blocos.</p>
+            <p>• Cura úmida contínua por no mínimo 7 dias após a concretagem.</p>
+          </div>
+          <div class="steel-summary-card">
+            <h3>Requisitos de Concretagem das Estacas (NBR 6122)</h3>
+            <p>• Slump: (18 ± 2) cm | Fator água/cimento: 0,53 a 0,56.</p>
+            <p>• Consumo mínimo de cimento: 400 kg/m³ | Teor de argamassa: ≥ 4,5%.</p>
+            <p>• Concretagem iniciada imediatamente após o término da escavação e descida da armadura.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA MODAL 3: BLOCOS -->
+      <div id="modalBlocos" class="modal-pane" style="display:none;">
+        <div class="notice-box" style="margin-bottom:14px;">
+          <strong>Blocos de Fundação B1 a B27 (Pranchas EST-02 a EST-05):</strong><br>
+          • 10 blocos de 2 estacas em X (B2..B11) · 160×60×60 cm<br>
+          • 5 blocos de 2 estacas em Y (B13, B16, B17, B21, B22) · 60×160×60 cm<br>
+          • 12 blocos de 1 estaca (B1, B12, B14, B15, B18..B20, B23..B27) · 60×60×60 cm
+        </div>
+
+        <table class="table-steel-full">
+          <thead>
+            <tr>
+              <th>Bitola (mm)</th>
+              <th>Categoria</th>
+              <th style="text-align:right;">Comprimento Total (m)</th>
+              <th style="text-align:right;">Peso + 10% (kg)</th>
+              <th>Principais Aplicações no Bloco</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ø 5,0 mm</strong></td>
+              <td><span class="badge-ca60">CA-60</span></td>
+              <td style="text-align:right; font-weight:700;">785,3 m</td>
+              <td style="text-align:right; font-weight:700; color:#fbbf24;">133,1 kg</td>
+              <td>Cintas horizontais perimetrais e estribos verticais tipo grelha</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 6,3 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right; font-weight:700;">75,6 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">20,3 kg</td>
+              <td>Armadura de reforço e cintas complementares (B8..B27)</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 8,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right; font-weight:700;">219,7 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">95,2 kg</td>
+              <td>Armadura superior de distribuição e armaduras de costela lateral N9</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 10,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right; font-weight:700;">162,1 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">109,9 kg</td>
+              <td>Tirantes inferiores principais (B2, B5, B6, B7, B10, etc.) e arranques</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 12,5 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right; font-weight:700;">69,6 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">73,6 kg</td>
+              <td>Tirantes inferiores de alta carga (B3, B9, B11, B13)</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 16,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right; font-weight:700;">97,8 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">169,6 kg</td>
+              <td>Arranques de pilares de seção robusta e tirantes especiais</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">TOTAL BLOCOS (B1 a B27)</td>
+              <td style="text-align:right; font-weight:800;">1.410,1 m</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">601,9 kg</td>
+              <td>Concreto C-25: <strong>10,70 m³</strong> | Fôrmas: <strong>56,88 m²</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- ABA MODAL 4: VIGAS -->
+      <div id="modalVigas" class="modal-pane" style="display:none;">
+        <div class="notice-box" style="margin-bottom:14px;">
+          <strong>Vigas Baldrames VB1 a VB22 (Pranchas EST-07 e EST-08):</strong><br>
+          Todas as vigas baldrames possuem largura de 14 cm e alturas variáveis de 30 cm a 45 cm, com topo nivelado na cota -0,10 m (Nível -10 cm), perfeitamente coplanares com a face superior dos blocos de fundação.
+        </div>
+
+        <table class="table-steel-full">
+          <thead>
+            <tr>
+              <th>Bitola (mm)</th>
+              <th>Categoria</th>
+              <th style="text-align:right;">VB1 a VB16 (m)</th>
+              <th style="text-align:right;">VB17 a VB22 (m)</th>
+              <th style="text-align:right;">Comp. Total (m)</th>
+              <th style="text-align:right;">Peso + 10% (kg)</th>
+              <th>Função Estrutural na Viga</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ø 5,0 mm</strong></td>
+              <td><span class="badge-ca60">CA-60</span></td>
+              <td style="text-align:right;">724,2 m</td>
+              <td style="text-align:right;">105,2 m</td>
+              <td style="text-align:right; font-weight:700;">829,4 m</td>
+              <td style="text-align:right; font-weight:700; color:#fbbf24;">140,6 kg</td>
+              <td>Estribos fechados simples c/ 15 cm e c/ 17 cm</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 6,3 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">168,9 m</td>
+              <td style="text-align:right;">12,9 m</td>
+              <td style="text-align:right; font-weight:700;">181,8 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">48,9 kg</td>
+              <td>Porta-estribos e barras de distribuição intermediárias</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 8,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">350,9 m</td>
+              <td style="text-align:right;">14,3 m</td>
+              <td style="text-align:right; font-weight:700;">365,2 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">158,5 kg</td>
+              <td>Armadura longitudinal superior e inferior de vão corrido</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 10,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">143,0 m</td>
+              <td style="text-align:right;">82,9 m</td>
+              <td style="text-align:right; font-weight:700;">225,9 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">153,1 kg</td>
+              <td>Reforços negativos sobre apoios e positivos principais</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 12,5 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">79,8 m</td>
+              <td style="text-align:right;">41,7 m</td>
+              <td style="text-align:right; font-weight:700;">121,5 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">128,7 kg</td>
+              <td>Armadura positiva e negativa em vigas de maior vão (VB1..VB4)</td>
+            </tr>
+            <tr>
+              <td><strong>Ø 16,0 mm</strong></td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">66,6 m</td>
+              <td style="text-align:right;">38,6 m</td>
+              <td style="text-align:right; font-weight:700;">105,2 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">182,5 kg</td>
+              <td>Reforços concentrados em pontos de momento máximo</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4">TOTAL VIGAS BALDRAMES (VB1 a VB22)</td>
+              <td style="text-align:right; font-weight:800;">1.829,0 m</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">812,2 kg</td>
+              <td>Concreto C-25: <strong>6,84 m³</strong> | Fôrmas: <strong>86,46 m²</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- ABA MODAL 5: ESTACAS -->
+      <div id="modalEstacas" class="modal-pane" style="display:none;">
+        <div class="notice-box" style="margin-bottom:14px;">
+          <strong>Estacas Escavadas C40 Ø40 cm (Prancha EST-01):</strong><br>
+          Total de 45 estacas no projeto. O modelo visual exibe as gaiolas de armadura completas, com corte visual de profundidade aos 3,5 m para visualização ergonômica sem alterar o quantitativo real.
+        </div>
+
+        <table class="table-steel-full">
+          <thead>
+            <tr>
+              <th>Tipo de Estaca</th>
+              <th>Quantidade</th>
+              <th>Profundidade Real</th>
+              <th>Cota de Arrasamento</th>
+              <th>Armadura Longitudinal</th>
+              <th>Estribos Helicoidais</th>
+              <th style="text-align:right;">Concreto C-25</th>
+              <th style="text-align:right;">Aço Total (+10%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>C40 Profunda</strong></td>
+              <td>42 estacas</td>
+              <td>7,0 metros</td>
+              <td>C.A. = -0,60 m</td>
+              <td>8 Ø 12,5 mm (L = 7,0 m)</td>
+              <td>Ø 6,3 mm c/ 10 cm (~50 espiras)</td>
+              <td style="text-align:right; font-weight:700;">36,95 m³</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">2.583,10 kg</td>
+            </tr>
+            <tr>
+              <td><strong>C40 Rasa</strong></td>
+              <td>3 estacas</td>
+              <td>2,0 metros</td>
+              <td>C.A. = -0,10 m</td>
+              <td>8 Ø 10,0 mm (L = 2,0 m)</td>
+              <td>Ø 6,3 mm c/ 14 cm (~14 espiras)</td>
+              <td style="text-align:right; font-weight:700;">0,75 m³</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">49,06 kg</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6">TOTAL ESTACAS ESCAVADAS C40 (45 UNIDADES)</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">37,70 m³</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">2.632,16 kg</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="steel-summary-card" style="margin-top:14px;">
+          <h3>Notas de Execução e Concretagem (NBR 6122)</h3>
+          <p>• Concreto FCK ≥ 25 MPa, Slump = (18 ± 2) cm para estacas escavadas com trado mecânico.</p>
+          <p>• Consumo mínimo de cimento: 400 kg/m³ | Fator a/c: 0,53 a 0,56.</p>
+          <p>• Volume total de concreto escavado nas 45 estacas: <strong>37,70 m³</strong> de C-25.</p>
+        </div>
+      </div>
+
+      <!-- ABA MODAL 6: RESUMO POR PRANCHA -->
+      <div id="modalPranchas" class="modal-pane" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="steel-summary-card">
+            <h3>EST-02 · Blocos B1 a B7</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso + 10%</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 5,0 mm</td><td>CA-60</td><td>259,8 m</td><td>44,0 kg</td></tr>
+                <tr><td>Ø 8,0 mm</td><td>CA-50</td><td>80,1 m</td><td>34,7 kg</td></tr>
+                <tr><td>Ø 10,0 mm</td><td>CA-50</td><td>64,1 m</td><td>43,5 kg</td></tr>
+                <tr><td>Ø 12,5 mm</td><td>CA-50</td><td>9,1 m</td><td>9,6 kg</td></tr>
+                <tr><td>Ø 16,0 mm</td><td>CA-50</td><td>37,2 m</td><td>64,6 kg</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Aço: <strong>196,4 kg</strong></td><td colspan="2" style="text-align:right;">C-25: <strong>3,51 m³</strong> · Fôrma: <strong>17,28 m²</strong></td></tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="steel-summary-card">
+            <h3>EST-03 · Blocos B8 a B15</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso + 10%</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 5,0 mm</td><td>CA-60</td><td>247,9 m</td><td>42,0 kg</td></tr>
+                <tr><td>Ø 6,3 mm</td><td>CA-50</td><td>21,6 m</td><td>5,8 kg</td></tr>
+                <tr><td>Ø 8,0 mm</td><td>CA-50</td><td>96,8 m</td><td>42,0 kg</td></tr>
+                <tr><td>Ø 10,0 mm</td><td>CA-50</td><td>38,4 m</td><td>26,0 kg</td></tr>
+                <tr><td>Ø 12,5 mm</td><td>CA-50</td><td>33,9 m</td><td>35,9 kg</td></tr>
+                <tr><td>Ø 16,0 mm</td><td>CA-50</td><td>7,3 m</td><td>12,6 kg</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Aço: <strong>164,4 kg</strong></td><td colspan="2" style="text-align:right;">C-25: <strong>3,36 m³</strong> · Fôrma: <strong>17,52 m²</strong></td></tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="steel-summary-card">
+            <h3>EST-04 · Blocos B16 a B23</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso + 10%</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 5,0 mm</td><td>CA-60</td><td>233,4 m</td><td>39,6 kg</td></tr>
+                <tr><td>Ø 6,3 mm</td><td>CA-50</td><td>10,8 m</td><td>2,9 kg</td></tr>
+                <tr><td>Ø 8,0 mm</td><td>CA-50</td><td>42,8 m</td><td>18,5 kg</td></tr>
+                <tr><td>Ø 10,0 mm</td><td>CA-50</td><td>59,6 m</td><td>40,4 kg</td></tr>
+                <tr><td>Ø 12,5 mm</td><td>CA-50</td><td>26,6 m</td><td>28,1 kg</td></tr>
+                <tr><td>Ø 16,0 mm</td><td>CA-50</td><td>24,2 m</td><td>42,0 kg</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Aço: <strong>171,6 kg</strong></td><td colspan="2" style="text-align:right;">C-25: <strong>3,02 m³</strong> · Fôrma: <strong>16,32 m²</strong></td></tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="steel-summary-card">
+            <h3>EST-05 · Blocos B24 a B27</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso + 10%</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 5,0 mm</td><td>CA-60</td><td>44,2 m</td><td>7,5 kg</td></tr>
+                <tr><td>Ø 6,3 mm</td><td>CA-50</td><td>43,2 m</td><td>11,6 kg</td></tr>
+                <tr><td>Ø 16,0 mm</td><td>CA-50</td><td>29,1 m</td><td>50,4 kg</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Aço: <strong>69,5 kg</strong></td><td colspan="2" style="text-align:right;">C-25: <strong>0,81 m³</strong> · Fôrma: <strong>5,76 m²</strong></td></tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="steel-summary-card">
+            <h3>EST-07 · Vigas VB1 a VB16</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso + 10%</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 5,0 mm</td><td>CA-60</td><td>724,2 m</td><td>122,8 kg</td></tr>
+                <tr><td>Ø 6,3 mm</td><td>CA-50</td><td>168,9 m</td><td>45,4 kg</td></tr>
+                <tr><td>Ø 8,0 mm</td><td>CA-50</td><td>350,9 m</td><td>152,3 kg</td></tr>
+                <tr><td>Ø 10,0 mm</td><td>CA-50</td><td>143,0 m</td><td>96,9 kg</td></tr>
+                <tr><td>Ø 12,5 mm</td><td>CA-50</td><td>79,8 m</td><td>84,5 kg</td></tr>
+                <tr><td>Ø 16,0 mm</td><td>CA-50</td><td>66,6 m</td><td>115,6 kg</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Aço: <strong>617,5 kg</strong></td><td colspan="2" style="text-align:right;">C-25: <strong>5,95 m³</strong> · Fôrma: <strong>74,85 m²</strong></td></tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="steel-summary-card">
+            <h3>EST-08 · Vigas VB17 a VB22</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso + 10%</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 5,0 mm</td><td>CA-60</td><td>105,2 m</td><td>17,8 kg</td></tr>
+                <tr><td>Ø 6,3 mm</td><td>CA-50</td><td>12,9 m</td><td>3,5 kg</td></tr>
+                <tr><td>Ø 8,0 mm</td><td>CA-50</td><td>14,3 m</td><td>6,2 kg</td></tr>
+                <tr><td>Ø 10,0 mm</td><td>CA-50</td><td>82,9 m</td><td>56,2 kg</td></tr>
+                <tr><td>Ø 12,5 mm</td><td>CA-50</td><td>41,7 m</td><td>44,2 kg</td></tr>
+                <tr><td>Ø 16,0 mm</td><td>CA-50</td><td>38,6 m</td><td>66,9 kg</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Aço: <strong>194,7 kg</strong></td><td colspan="2" style="text-align:right;">C-25: <strong>0,89 m³</strong> · Fôrma: <strong>11,61 m²</strong></td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div style="font-size:11px; color:var(--muted);">
+        Concreto C-25: <strong>55,24 m³</strong> &nbsp;|&nbsp; Fôrmas: <strong>143,34 m²</strong> &nbsp;|&nbsp; Aço Total da Obra: <strong>4.046,3 kg</strong>
+      </div>
+      <button type="button" class="active" id="btnCloseSteelModalFooter" style="padding:6px 16px;">Fechar Resumo</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
