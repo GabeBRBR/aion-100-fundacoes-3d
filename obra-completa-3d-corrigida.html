@@ -1105,7 +1105,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
         <strong>Girar:</strong> Botão esquerdo &nbsp;|&nbsp; 
         <strong>Deslocar:</strong> Botão direito / Shift &nbsp;|&nbsp; 
         <strong>Zoom:</strong> Roda do mouse &nbsp;|&nbsp; 
-        <strong>Inspecionar:</strong> Clique em qualquer viga ou bloco. Estacas C40 de 7,0 m exibem corte visual de 3,5 m.
+        <strong>Inspecionar:</strong> Clique em qualquer viga ou bloco. Estacas C40 de 7,0 m: armadura com 5,40 m (40 cm arranque + 5,0 m fuste) conforme Prancha EST-01.
       </div>
     </div>
 
@@ -1683,37 +1683,51 @@ function buildStructuralModel() {
 
 // Gaiola de estaca conforme EST-01: C40_7m = 8Ø12.5 + Ø6.3 c/10;
 // C40_2m = 8Ø10.0 + Ø6.3 c/14. A parcela abaixo do corte visual não é desenhada.
-function addPileCage(x, y, zTop, visibleLength, realLength, owner) {
-  const isLong = realLength >= 700;
-  const longDiam = isLong ? 12.5 : 10.0;
-  const hoopDiam = 6.3;
-  const spacing = isLong ? 10 : 14;
-  const cageRadius = 15.5;
-  const longMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.32, metalness: 0.5 });
-  const hoopMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.35, metalness: 0.42 });
+function addPileCage(x, y, zCA, isLong, owner) {
   const cage = new THREE.Group();
   cage.userData = { bloco: owner, type: 'ARMADURA_ESTACA' };
 
+  const longDiam = isLong ? 12.5 : 10.0;
+  const hoopDiam = 6.3;
+  const cageRadius = 17.0; // Diâmetro da armadura = 34,0 cm conforme Prancha EST-01 (cobrimento 3 cm)
+
+  const arranque = isLong ? 40 : 23;        // 40 cm (7m) ou 23 cm (2m)
+  const shaftRebarLen = isLong ? 500 : 197; // 500 cm (7m) ou 197 cm (2m)
+  const totalRebarLen = isLong ? 540 : 220; // 540 cm (7m) ou 220 cm (2m)
+
+  const zTopRebar = zCA + arranque;
+  const zBottomRebar = zCA - shaftRebarLen;
+  const zCenterRebar = (zTopRebar + zBottomRebar) / 2;
+
+  const longMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.32, metalness: 0.5 });
+  const hoopMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.35, metalness: 0.42 });
+
+  // 1. Armadura Longitudinal: 8 barras N1
   for (let i = 0; i < 8; i++) {
     const angle = i * Math.PI * 2 / 8;
-    const bar = new THREE.Mesh(new THREE.CylinderGeometry(barRadiusCm(longDiam), barRadiusCm(longDiam), visibleLength, 8), longMat);
-    bar.rotateX(Math.PI / 2);
-    bar.position.set(x + Math.cos(angle) * cageRadius, y + Math.sin(angle) * cageRadius, zTop - visibleLength / 2);
+    const barGeom = new THREE.CylinderGeometry(barRadiusCm(longDiam), barRadiusCm(longDiam), totalRebarLen, 8);
+    barGeom.rotateX(Math.PI / 2);
+    const bar = new THREE.Mesh(barGeom, longMat);
+    bar.position.set(
+      x + Math.cos(angle) * cageRadius,
+      y + Math.sin(angle) * cageRadius,
+      zCenterRebar
+    );
     cage.add(bar);
   }
-  // EST-01: as C40 de 2 m têm exatamente 14 estribos N2; nas C40 de
-  // 7 m o trecho visível conserva a cadência de 10 cm até o corte de 3,5 m.
-  const hoopCount = isLong ? Math.floor(visibleLength / spacing) + 1 : 14;
+
+  // 2. Estribos helicoidais / anéis N2 Ø6.3
+  const hoopCount = isLong ? 50 : 14;
+  const spacing = isLong ? 10 : 14;
   for (let i = 0; i < hoopCount; i++) {
-    const z = isLong
-      ? zTop - Math.min(i * spacing, visibleLength)
-      : zTop - 4 - i * spacing;
+    const zHoop = isLong ? (zCA - 5 - i * spacing) : (zCA - 3 - i * spacing);
     const pts = Array.from({ length: 17 }, (_, k) => {
       const a = k * Math.PI * 2 / 16;
-      return new THREE.Vector3(x + Math.cos(a) * cageRadius, y + Math.sin(a) * cageRadius, z);
+      return new THREE.Vector3(x + Math.cos(a) * cageRadius, y + Math.sin(a) * cageRadius, zHoop);
     });
     cage.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.04), 24, barRadiusCm(hoopDiam), 6, true), hoopMat));
   }
+
   groupPiles.add(cage);
 }
 
@@ -1744,23 +1758,25 @@ function buildBlocksAndPiles() {
     }) : b.estacas;
     pileList.forEach(est => {
       const radius = 20; // Ø40 cm
-      const len = Math.min(est.prof, PILE_VISIBLE_CUT_CM); // corte visual dos primeiros 3,5 m
+      const len = est.prof; // Concreto integral fiel à prancha: 700 cm (7,0 m)
       const pGeom = new THREE.CylinderGeometry(radius, radius, len, 24);
       pGeom.rotateX(Math.PI / 2);
 
       const pMesh = new THREE.Mesh(pGeom, matPileConcrete);
-      // O topo da estaca coincide com sua cota de arrasamento (CA), -60 cm nas C40_7m.
+      // Topo coincide com a cota de arrasamento (CA = -60 cm nas C40_7m).
       const pileX = est.globalX !== undefined ? est.globalX - CX : b.blockLx + est.rx;
       const pileY = est.globalY !== undefined ? est.globalY - CY : b.blockLy + est.ry;
       pMesh.position.set(pileX, pileY, est.ca - len/2);
-      pMesh.userData = { type: 'ESTACA', id: `${b.id}_estaca`, bloco: b.id, profReal: est.prof, profVisivel: len, ca: est.ca, pileConcrete: true };
+      pMesh.userData = { type: 'ESTACA', id: `${b.id}_estaca`, bloco: b.id, profReal: est.prof, ca: est.ca, pileConcrete: true };
       groupPiles.add(pMesh);
 
       const cEdges = new THREE.LineSegments(new THREE.EdgesGeometry(pGeom, 30), new THREE.LineBasicMaterial({ color: 0x94a3b8 }));
       cEdges.position.copy(pMesh.position);
       cEdges.userData = { type: 'CONTORNO_ESTACA' };
       groupPiles.add(cEdges);
-      addPileCage(pileX, pileY, est.ca, len, est.prof, b.id);
+
+      const isLong = est.prof >= 700;
+      addPileCage(pileX, pileY, est.ca, isLong, b.id);
     });
 
     // 3. Armaduras FIEIS de cada Bloco
@@ -2641,7 +2657,7 @@ function inspectElement(type, id) {
     body.innerHTML = `
       <div><strong>Locação Global:</strong> X = ${(b.x/100).toFixed(2)} m · Y = ${(b.y/100).toFixed(2)} m</div>
       <div><strong>Arrasamento:</strong> CA: -0.60 m · Nível do topo: -0.10 m (Cota Fiel às Pranchas 02-08)</div>
-      <div><strong>Estacas:</strong> ${b.estacas.length} × Ø40 cm C40 (prof. 7,0 m; corte visual de 3,5 m)</div>
+      <div><strong>Estacas:</strong> ${b.estacas.length} × Ø40 cm C40 (prof. 7,0 m (armadura N1 C=540 cm: 40 cm arranque + 500 cm fuste; 50 estribos N2 Ø6.3 c/10))</div>
       ${rebarDetails}
     `;
 
@@ -3361,8 +3377,9 @@ window.addEventListener('DOMContentLoaded', init);
       <!-- ABA MODAL 5: ESTACAS -->
       <div id="modalEstacas" class="modal-pane" style="display:none;">
         <div class="notice-box" style="margin-bottom:14px;">
-          <strong>Estacas Escavadas C40 Ø40 cm (Prancha EST-01):</strong><br>
-          Total de 45 estacas no projeto. O modelo visual exibe as gaiolas de armadura completas, com corte visual de profundidade aos 3,5 m para visualização ergonômica sem alterar o quantitativo real.
+          <strong>Estacas Escavadas C40 Ø40 cm (Prancha Oficial AION-EST-01):</strong><br>
+          • <strong>42 Estacas C40_7m (Prof. = 7,0 m):</strong> Armadura longitudinal <strong>8 N1 Ø 12,5 mm</strong> com comprimento unitário <strong>C = 540 cm (5,40 m)</strong>, composto por <strong>40 cm de arranque</strong> acima do arrasamento (engaste no bloco) e <strong>500 cm (5,0 m)</strong> de fuste armado. Possui <strong>50 estribos N2 Ø 6,3 mm c/ 10 cm</strong> (Ø 34 cm). O trecho inferior de 2,0 m é executado em concreto simples.<br>
+          • <strong>3 Estacas C40_2m (Prof. = 2,0 m):</strong> Armadura longitudinal <strong>8 N1 Ø 10,0 mm</strong> com <strong>C = 220 cm (2,20 m)</strong> (23 cm arranque + 197 cm fuste) e <strong>14 estribos N2 Ø 6,3 mm c/ 14 cm</strong>.
         </div>
 
         <table class="table-steel-full">
@@ -3380,22 +3397,22 @@ window.addEventListener('DOMContentLoaded', init);
           </thead>
           <tbody>
             <tr>
-              <td><strong>C40 Profunda</strong></td>
+              <td><strong>C40_7m (Profunda)</strong></td>
               <td>42 estacas</td>
-              <td>7,0 metros</td>
+              <td>7,0 metros (concreto C-25)</td>
               <td>C.A. = -0,60 m</td>
-              <td>8 Ø 12,5 mm (L = 7,0 m)</td>
-              <td>Ø 6,3 mm c/ 10 cm (~50 espiras)</td>
+              <td>8 N1 Ø 12,5 mm · C=540 cm (40 cm arranque + 500 cm fuste)</td>
+              <td>50 N2 Ø 6,3 mm c/ 10 cm (C=116,8 cm)</td>
               <td style="text-align:right; font-weight:700;">36,95 m³</td>
               <td style="text-align:right; font-weight:700; color:#38bdf8;">2.583,10 kg</td>
             </tr>
             <tr>
-              <td><strong>C40 Rasa</strong></td>
+              <td><strong>C40_2m (Rasa - E1..E3)</strong></td>
               <td>3 estacas</td>
-              <td>2,0 metros</td>
+              <td>2,0 metros (concreto C-25)</td>
               <td>C.A. = -0,10 m</td>
-              <td>8 Ø 10,0 mm (L = 2,0 m)</td>
-              <td>Ø 6,3 mm c/ 14 cm (~14 espiras)</td>
+              <td>8 N1 Ø 10,0 mm · C=220 cm (23 cm arranque + 197 cm fuste)</td>
+              <td>14 N2 Ø 6,3 mm c/ 14 cm (C=116,8 cm)</td>
               <td style="text-align:right; font-weight:700;">0,75 m³</td>
               <td style="text-align:right; font-weight:700; color:#38bdf8;">49,06 kg</td>
             </tr>
