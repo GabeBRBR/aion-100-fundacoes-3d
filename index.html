@@ -1802,7 +1802,8 @@ function buildBlocksAndPiles() {
     cEdges.position.copy(pMesh.position);
     cEdges.userData = { type: 'CONTORNO_ESTACA' };
     groupPiles.add(cEdges);
-    addPileCage(est.lx, est.ly, est.ca, len, est.prof, est.id);
+    const isLong = est.prof >= 700;
+    addPileCage(est.lx, est.ly, est.ca, isLong, est.id);
   });
 }
 
