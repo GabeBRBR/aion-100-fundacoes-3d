@@ -2066,9 +2066,15 @@ function resolveBeamNode(node, zMid) {
 
 function pdfBarGroups(desc = '') {
   const groups = [];
-  const rx = /(\d+)(?:\s*[x×]\s*(\d+))?\s+N\d+\s+Ø\s*(\d+(?:\.\d+)?)/g;
+  const rx = /(\d+)(?:\s*[xX]\s*(\d+))?\s+N\d+\s+.*?(\d+(?:\.\d+)?)(?:.*?C=(\d+))?/gi;
   let match;
-  while ((match = rx.exec(desc))) groups.push({ quant: Number(match[1]) * Number(match[2] || 1), diam: Number(match[3]) });
+  while ((match = rx.exec(desc))) {
+    groups.push({ 
+      quant: Number(match[1]) * Number(match[2] || 1), 
+      diam: Number(match[3]),
+      len: match[4] ? Number(match[4]) : 0
+    });
+  }
   return groups;
 }
 
@@ -2085,20 +2091,62 @@ function buildContinuousBeamRebar(v, dxfSegments, mats) {
   rects.forEach((r, index) => { if (index) path.add(new THREE.LineCurve3(rects[index - 1].b, r.a)); path.add(new THREE.LineCurve3(r.a, r.b)); });
   const group = new THREE.Group(); group.userData = { parentId: v.id };
   const normal = new THREE.Vector3(-(rects[0].b.y - rects[0].a.y), rects[0].b.x - rects[0].a.x, 0).normalize();
-  const addLongitudinal = (entries, z, material) => {
-    const total = entries.reduce((sum, item) => sum + item.quant, 0); let ordinal = 0;
+    const addLongitudinal = (entries, z, material) => {
+    if (!entries.length) return;
+    const maxQuant = Math.max(...entries.map(e => e.quant));
+    
+    // Distribute entries into 'maxQuant' lines
+    const lines = Array.from({length: maxQuant}, () => []);
     entries.forEach(entry => {
-      for (let i = 0; i < entry.quant; i++, ordinal++) {
-        const offset = total > 1 ? -((v.b - 6) / 2) + ordinal * (v.b - 6) / (total - 1) : 0;
-        const shifted = new THREE.CurvePath();
-        path.curves.forEach(curve => shifted.add(new THREE.LineCurve3(curve.v1.clone().addScaledVector(normal, offset).setZ(z), curve.v2.clone().addScaledVector(normal, offset).setZ(z))));
-        const mesh = new THREE.Mesh(new THREE.TubeGeometry(shifted, 10, barRadiusCm(entry.diam), 6, false), material);
-        mesh.userData = { parentId: v.id, role: 'barra-longitudinal', diam: entry.diam };
-        group.add(mesh);
-      }
+        if (entry.quant === 1) {
+            lines[Math.floor(maxQuant/2)].push(entry);
+        } else if (entry.quant === maxQuant) {
+            for(let i=0; i<maxQuant; i++) lines[i].push(entry);
+        } else {
+            let step = (maxQuant - 1) / (entry.quant - 1 || 1);
+            for(let i=0; i<entry.quant; i++) {
+                lines[Math.round(i * step)].push(entry);
+            }
+        }
     });
-  };
-  addLongitudinal(pdfBarGroups(v.rebar?.inf?.desc), zInf, mats.inf);
+
+    const totalBeamLen = rects.reduce((sum, r) => sum + r.len, 0);
+
+    for (let ordinal = 0; ordinal < maxQuant; ordinal++) {
+      const offset = maxQuant > 1 ? -((v.b - 6) / 2) + ordinal * (v.b - 6) / (maxQuant - 1) : 0;
+      const shiftedPath = new THREE.CurvePath();
+      path.curves.forEach(curve => shiftedPath.add(new THREE.LineCurve3(
+        curve.v1.clone().addScaledVector(normal, offset).setZ(z), 
+        curve.v2.clone().addScaledVector(normal, offset).setZ(z)
+      )));
+
+      let currentPos = 0;
+      const lineEntries = lines[ordinal];
+      
+      lineEntries.forEach((entry, idx) => {
+        let pieceLen = entry.len || totalBeamLen;
+        if (pieceLen > totalBeamLen) pieceLen = totalBeamLen; 
+        
+        if (currentPos + pieceLen > totalBeamLen) {
+            currentPos = Math.max(0, totalBeamLen - pieceLen);
+        }
+
+        const points = [];
+        const numSamples = Math.max(2, Math.floor(pieceLen / 10)); 
+        for(let i=0; i<=numSamples; i++) {
+            const u = (currentPos + (i/numSamples)*pieceLen) / totalBeamLen;
+            points.push(shiftedPath.getPointAt(Math.max(0, Math.min(1, u))));
+        }
+        
+        const pieceCurve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.01);
+        const mesh = new THREE.Mesh(new THREE.TubeGeometry(pieceCurve, Math.max(6, numSamples), barRadiusCm(entry.diam), 6, false), material);
+        mesh.userData = { parentId: v.id, role: 'barra-longitudinal', diam: entry.diam, pieceLen: pieceLen };
+        group.add(mesh);
+
+        currentPos += pieceLen;
+      });
+    }
+  };  addLongitudinal(pdfBarGroups(v.rebar?.inf?.desc), zInf, mats.inf);
   addLongitudinal(pdfBarGroups(v.rebar?.sup?.desc), zSup, mats.sup);
   if (v.rebar?.pele) {
     const peleEntries = pdfBarGroups(v.rebar.pele.desc);
