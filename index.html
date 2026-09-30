@@ -561,10 +561,12 @@ input[type=range] {
   font-weight: 700;
   text-align: left;
   border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
 }
 .table-steel-full td {
   padding: 8px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  white-space: nowrap;
 }
 .table-steel-full tr:hover td { background: rgba(255,255,255,0.03); }
 .table-steel-full tfoot td {
@@ -572,9 +574,10 @@ input[type=range] {
   font-weight: 800;
   color: #fff;
   border-top: 2px solid var(--accent);
+  white-space: nowrap;
 }
-.badge-ca50 { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
-.badge-ca60 { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
+.badge-ca50 { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; white-space: nowrap; display: inline-block; }
+.badge-ca60 { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; white-space: nowrap; display: inline-block; }
 
 /* --- RESPONSIVIDADE E MODOS DE INTERFACE (DESKTOP E CELULAR) --- */
 .mobile-only { display: none !important; }
@@ -894,7 +897,7 @@ body.mode-mobile .modal-body {
 }
 body.mode-mobile .table-steel-full {
   font-size: 10.5px;
-  min-width: 540px;
+  min-width: 680px;
 }
 body.mode-mobile .table-steel-full th,
 body.mode-mobile .table-steel-full td {
@@ -1013,7 +1016,7 @@ body.mode-mobile .modal-footer button {
   body:not(.mode-desktop) .modal-tabs { padding: 6px 10px; gap: 4px; }
   body:not(.mode-desktop) .modal-tab-btn { padding: 5px 9px; font-size: 10.5px; flex-shrink: 0; }
   body:not(.mode-desktop) .modal-body { padding: 12px 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  body:not(.mode-desktop) .table-steel-full { font-size: 10.5px; min-width: 540px; }
+  body:not(.mode-desktop) .table-steel-full { font-size: 10.5px; min-width: 680px; }
   body:not(.mode-desktop) .table-steel-full th,
   body:not(.mode-desktop) .table-steel-full td { padding: 6px 8px; }
   body:not(.mode-desktop) .modal-footer {
@@ -1375,8 +1378,8 @@ const DATA = {
       { bitola: 6.3,  aco: "CA-50", pecas: 2206, blocos_m: 75.6,   vigas_m: 181.8,  estacas_m: 2502.16, total_m: 2759.56, peso_10_kg: 743.53, perc: 18.4 },
       { bitola: 8.0,  aco: "CA-50", pecas: 181,  blocos_m: 219.7,  vigas_m: 350.9,  estacas_m: 0.0,     total_m: 584.9,   peso_10_kg: 253.7,  perc: 6.3 },
       { bitola: 10.0, aco: "CA-50", pecas: 168,  blocos_m: 162.1,  vigas_m: 225.9,  estacas_m: 52.80,   total_m: 440.8,   peso_10_kg: 298.84, perc: 7.4 },
-      { bitola: 12.5, aco: "CA-50", pecas: 380,  blocos_m: 69.6,   vigas_m: 121.5,  estacas_m: 1814.40, total_m: 2005.5,  peso_10_kg: 2124.30,perc: 52.5 },
-      { bitola: 16.0, aco: "CA-50", pecas: 51,   blocos_m: 97.8,   vigas_m: 105.2,  estacas_m: 0.0,     total_m: 203.0,   peso_10_kg: 352.1,  perc: 8.7 }
+      { bitola: 12.5, aco: "CA-50", pecas: 394,  blocos_m: 69.6,   vigas_m: 121.5,  estacas_m: 1814.40, total_m: 2005.5,  peso_10_kg: 2124.30,perc: 52.5 },
+      { bitola: 16.0, aco: "CA-50", pecas: 101,  blocos_m: 97.8,   vigas_m: 105.2,  estacas_m: 0.0,     total_m: 203.0,   peso_10_kg: 352.1,  perc: 8.7 }
     ],
     totaisPorCategoria: {
       ca60: { total_m: 1614.70, peso_10_kg: 273.70, perc: 6.8 },
@@ -1384,7 +1387,7 @@ const DATA = {
     },
     totaisPorElemento: {
       vigas:   { total_m: 1829.00, peso_10_kg: 812.20, concreto_m3: 6.84,  formas_m2: 86.46, pecas: 1026 },
-      blocos:  { total_m: 1410.10, peso_10_kg: 601.90, concreto_m3: 10.70, formas_m2: 56.88, pecas: 738 },
+      blocos:  { total_m: 1410.10, peso_10_kg: 601.90, concreto_m3: 10.70, formas_m2: 56.88, pecas: 802 },
       estacas: { total_m: 4369.36, peso_10_kg: 2632.16,concreto_m3: 37.70, formas_m2: 0.0,   pecas: 2502 }
     },
     totalGeral: {
@@ -1392,7 +1395,7 @@ const DATA = {
       peso_10_kg: 4046.26,
       concreto_m3: 55.24,
       formas_m2: 143.34,
-      pecas: 4266
+      pecas: 4330
     }
   },
   center: [11711.2, 50524.5],
@@ -4074,11 +4077,11 @@ window.addEventListener('DOMContentLoaded', init);
               <td style="text-align:right;">6,84 m³</td>
               <td style="text-align:right;">86,46 m²</td>
             </tr>
-            <tr data-element="blocos" data-bars="738" data-length="1410.1" data-weight="601.9">
+            <tr data-element="blocos" data-bars="802" data-length="1410.1" data-weight="601.9">
               <td><strong>Blocos de Coroamento (B1 a B27)</strong></td>
               <td>EST-02 a EST-05</td>
               <td>Ø 5.0, 6.3, 8.0, 10.0, 12.5, 16.0</td>
-              <td style="text-align:right;">738 peças</td>
+              <td style="text-align:right;">802 peças</td>
               <td style="text-align:right; font-weight:700;">1.410,1 m</td>
               <td style="text-align:right; font-weight:700; color:#38bdf8;">601,9 kg</td>
               <td style="text-align:right;">10,70 m³</td>
@@ -4108,7 +4111,7 @@ window.addEventListener('DOMContentLoaded', init);
           <tfoot>
             <tr style="border-top:2px solid var(--accent); background:#1c2336;">
               <td colspan="3" style="font-weight:800; color:var(--accent);">TOTAL DA FUNDAÇÃO E BALDRAME</td>
-              <td style="text-align:right; font-weight:800; color:var(--accent);">4.266 peças</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">4.330 peças</td>
               <td style="text-align:right; font-weight:800; color:var(--accent);">7.608,5 m</td>
               <td style="text-align:right; font-weight:800; color:var(--accent);">4.046,3 kg</td>
               <td style="text-align:right; font-weight:800; color:var(--accent);">55,24 m³</td>
