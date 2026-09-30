@@ -2995,39 +2995,71 @@ function buildContinuousBeamRebar(v, dxfSegments, mats) {
       .addScaledVector(normal, yOffset);
     ptEnd.z = zLevel;
 
-    const pts = [];
+    const isUp = (spec.role === 'inf');
+    const w = new THREE.Vector3(0, 0, isUp ? 1 : -1);
 
-    // Gancho esquerdo vertical
-    if (d1 > 0) {
-      const isUp = (spec.role === 'inf');
-      const maxD1 = isUp ? Math.max(10, startSupportH - 6.0) : Math.max(10, hAlt - 6.0);
-      const effD1 = Math.min(d1, maxD1);
-      const hookZ = isUp ? (zLevel + effD1) : (zLevel - effD1);
-      pts.push(new THREE.Vector3(ptStart.x, ptStart.y, hookZ));
+    const maxD1 = isUp ? Math.max(8, startSupportH - 6.0) : Math.max(8, Math.max(startSupportH, hAlt) - 6.0);
+    const effD1 = Math.min(d1 || 0, maxD1);
+
+    const maxD2 = isUp ? Math.max(8, endSupportH - 6.0) : Math.max(8, Math.max(endSupportH, hAlt) - 6.0);
+    const effD2 = Math.min(d2 || 0, maxD2);
+
+    // Barra reta sem ganchos
+    if (effD1 <= 0 && effD2 <= 0) {
+      const curve = new THREE.LineCurve3(ptStart, ptEnd);
+      const geom = new THREE.TubeGeometry(curve, 16, rBar, 8, false);
+      const mesh = new THREE.Mesh(geom, spec.mat || mats.inf);
+      mesh.userData = {
+        parentId: v.id,
+        type: 'BARRA_SEGMENTO',
+        mark: spec.mark ? ('N' + spec.mark) : 'Barra',
+        diam: diam,
+        c: spec.c || (s2 - s1),
+        comp_reto: spec.comp_reto || (s2 - s1),
+        dobra_esq: 0,
+        dobra_dir: 0,
+        role: spec.role || 'longitudinal',
+        tipo: spec.tipo || spec.role
+      };
+      group.add(mesh);
+      return;
     }
 
-    pts.push(ptStart);
-    pts.push(ptEnd);
+    // Raio de curvatura da dobra a 90 graus (conforme NBR 6118 / detalhamento real)
+    const R = Math.min(2.8, Math.max(1.5, rBar * 3.0));
+    const path = new THREE.CurvePath();
 
-    // Gancho direito vertical
-    if (d2 > 0) {
-      const isUp = (spec.role === 'inf');
-      const maxD2 = isUp ? Math.max(10, endSupportH - 6.0) : Math.max(10, hAlt - 6.0);
-      const effD2 = Math.min(d2, maxD2);
-      const hookZ = isUp ? (zLevel + effD2) : (zLevel - effD2);
-      pts.push(new THREE.Vector3(ptEnd.x, ptEnd.y, hookZ));
+    // 1. Gancho esquerdo com dobra suave a 90 graus
+    if (effD1 > 0) {
+      const pTip1       = ptStart.clone().addScaledVector(w, effD1);
+      const pBendStart1 = ptStart.clone().addScaledVector(w, R);
+      const pBendEnd1   = ptStart.clone().addScaledVector(dir, R);
+
+      if (effD1 > R) {
+        path.add(new THREE.LineCurve3(pTip1, pBendStart1));
+      }
+      path.add(new THREE.QuadraticBezierCurve3(pBendStart1, ptStart, pBendEnd1));
     }
 
-    let curve, tubularSegs;
-    if (pts.length === 2) {
-      curve = new THREE.LineCurve3(pts[0], pts[1]);
-      tubularSegs = 12;
-    } else {
-      curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.05);
-      tubularSegs = Math.max(8, pts.length * 3);
+    // 2. Corpo reto horizontal da barra
+    const bodyStart = effD1 > 0 ? ptStart.clone().addScaledVector(dir, R) : ptStart;
+    const bodyEnd   = effD2 > 0 ? ptEnd.clone().addScaledVector(dir, -R) : ptEnd;
+    path.add(new THREE.LineCurve3(bodyStart, bodyEnd));
+
+    // 3. Gancho direito com dobra suave a 90 graus
+    if (effD2 > 0) {
+      const pBendStart2 = ptEnd.clone().addScaledVector(dir, -R);
+      const pBendEnd2   = ptEnd.clone().addScaledVector(w, R);
+      const pTip2       = ptEnd.clone().addScaledVector(w, effD2);
+
+      path.add(new THREE.QuadraticBezierCurve3(pBendStart2, ptEnd, pBendEnd2));
+      if (effD2 > R) {
+        path.add(new THREE.LineCurve3(pBendEnd2, pTip2));
+      }
     }
 
-    const geom = new THREE.TubeGeometry(curve, tubularSegs, rBar, 6, false);
+    const tubularSegs = 32 + (effD1 > 0 ? 12 : 0) + (effD2 > 0 ? 12 : 0);
+    const geom = new THREE.TubeGeometry(path, tubularSegs, rBar, 8, false);
     const mesh = new THREE.Mesh(geom, spec.mat || mats.inf);
     mesh.userData = {
       parentId: v.id,
