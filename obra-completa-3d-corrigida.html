@@ -2776,8 +2776,6 @@ function pdfBarGroups(desc = '') {
  * 8. Compatibilidade retroativa total com fallback estruturado para descrições legadas em texto.
  */
 function buildContinuousBeamRebar(v, dxfSegments, mats) {
-  if (!dxfSegments || !dxfSegments.length) return;
-
   const bLarg = v.b || 20;
   const hAlt  = v.h || 45;
   const zTopo = -10.0;
@@ -2787,109 +2785,244 @@ function buildContinuousBeamRebar(v, dxfSegments, mats) {
   const cover = 3.0;
   const yDist = Math.max(2.0, (bLarg - 2 * cover) / 2.0);
 
-  // 1. Processamento e parametrização dos vãos livres e travessias a partir do DXF
-  const rects = dxfSegments.map(rect => {
-    const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]);
-    const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
-    const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
-    const a = horizontal 
-      ? new THREE.Vector3(x1 - CX, (y1 + y2) / 2.0 - CY, 0) 
-      : new THREE.Vector3((x1 + x2) / 2.0 - CX, y1 - CY, 0);
-    const b = horizontal 
-      ? new THREE.Vector3(x2 - CX, (y1 + y2) / 2.0 - CY, 0) 
-      : new THREE.Vector3((x1 + x2) / 2.0 - CX, y2 - CY, 0);
-    return { a, b, len: a.distanceTo(b), angle: Math.atan2(b.y - a.y, b.x - a.x) };
-  });
+  const resolveSupportData = (name) => {
+    if (DATA.blocos && DATA.blocos[name]) {
+      const b = DATA.blocos[name];
+      return { 
+        pt: new THREE.Vector3(b.blockLx !== undefined ? b.blockLx : (b.x - CX), b.blockLy !== undefined ? b.blockLy : (b.y - CY), 0), 
+        dim: b.dim, 
+        h: b.dim[2] || 60 
+      };
+    }
+    const est = DATA.estacasIsoladas && DATA.estacasIsoladas.find(e => e.id === name);
+    if (est) {
+      return { 
+        pt: new THREE.Vector3(est.lx !== undefined ? est.lx : (est.x - CX), est.ly !== undefined ? est.ly : (est.y - CY), 0), 
+        dim: [40, 40, 200], 
+        h: 200 
+      };
+    }
+    return null;
+  };
 
-  const pStartClear = rects[0].a.clone();
-  const pEndClear   = rects[rects.length - 1].b.clone();
-  const dir         = rects[0].b.clone().sub(rects[0].a).normalize();
-  const normal      = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
-  const spanSpanLen = pEndClear.clone().sub(pStartClear).dot(dir);
-
-  // Identificação de dados explícitos de armadura (Schema Augmentado)
-  const explicitInf   = v.rebar && v.rebar.inf && v.rebar.inf.barras ? v.rebar.inf.barras : null;
-  const explicitSup   = v.rebar && v.rebar.sup && v.rebar.sup.barras ? v.rebar.sup.barras : null;
-  const explicitPele  = v.rebar && v.rebar.pele && v.rebar.pele.barras ? v.rebar.pele.barras : null;
-  const explicitZonas = v.rebar && v.rebar.estribos && v.rebar.estribos.zonas ? v.rebar.estribos.zonas : null;
-  const hasExplicitData = !!(explicitInf || explicitSup);
-
-  // Determinação do comprimento físico total e ajuste da ancoragem nos pilares de extremidade
-  let maxBarEnd = spanSpanLen;
-  if (hasExplicitData) {
-    const allBars = [
-      ...(explicitInf || []),
-      ...(explicitSup || []),
-      ...(explicitPele || [])
-    ];
-    allBars.forEach(b => {
-      const bEnd = b.x_end !== undefined ? b.x_end : (b.x_start || 0) + (b.comp_reto || b.c || 0);
-      if (bEnd > maxBarEnd) maxBarEnd = bEnd;
+  // Convert dxfSegments to 3D cm rects
+  let cmRects = [];
+  if (dxfSegments && dxfSegments.length) {
+    cmRects = dxfSegments.map(rect => {
+      const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]);
+      const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
+      return [x1 - CX, y1 - CY, x2 - CX, y2 - CY];
     });
   }
 
-  // Embutimento nos pilares de extremidade para coincidir a origem com o início das ancoragens
-  const extTotal = Math.max(0, maxBarEnd - spanSpanLen);
-  const extStart = extTotal > 0 ? extTotal / 2.0 : 0.0;
-  const pOrigin = pStartClear.clone().sub(dir.clone().multiplyScalar(extStart));
+  let isHorizontal = true;
+  if (cmRects.length) {
+    const minX = Math.min(...cmRects.map(r => r[0]));
+    const maxX = Math.max(...cmRects.map(r => r[2]));
+    const minY = Math.min(...cmRects.map(r => r[1]));
+    const maxY = Math.max(...cmRects.map(r => r[3]));
+    isHorizontal = (maxX - minX) >= (maxY - minY);
+  } else if (v.pontos && v.pontos.length >= 2) {
+    const dx = v.pontos[v.pontos.length - 1].x - v.pontos[0].x;
+    const dy = v.pontos[v.pontos.length - 1].y - v.pontos[0].y;
+    isHorizontal = Math.abs(dx) >= Math.abs(dy);
+  }
 
-  const group = new THREE.Group();
-  group.userData = { parentId: v.id, type: 'ARMADURA_VIGA_SEGMENTADA' };
+  let pStartOuter, pEndOuter, dir, normal, outerSpan;
+  let startSupportH = 60, endSupportH = 60;
 
-  // Conversor Isométrico: mapeia (estação longitudinal s, afastamento lateral n, cota z) em coordenada 3D
-  const getPoint3D = (s, n, z) => {
-    return pOrigin.clone()
-      .addScaledVector(dir, s)
-      .addScaledVector(normal, n)
-      .setZ(z);
+  const nosList = v.nos && v.nos.length >= 2 ? v.nos : (v.id === 'VB4' ? ['B10', 'B11'] : null);
+  
+  if (isHorizontal) {
+    dir = new THREE.Vector3(1, 0, 0);
+    normal = new THREE.Vector3(0, 1, 0);
+    
+    // Beam centerline Y from DXF segments if available
+    let yCenter;
+    if (cmRects.length) {
+      yCenter = cmRects.reduce((acc, r) => acc + (r[1] + r[3]) / 2, 0) / cmRects.length;
+    } else if (v.pontos && v.pontos.length >= 2) {
+      yCenter = (v.pontos[0].y + v.pontos[v.pontos.length - 1].y) / 2 - CY;
+    } else {
+      yCenter = 0;
+    }
+
+    let xOuterStart, xOuterEnd;
+    if (nosList) {
+      const sA = resolveSupportData(nosList[0]);
+      const sB = resolveSupportData(nosList[nosList.length - 1]);
+      if (sA && sB) {
+        startSupportH = sA.h;
+        endSupportH = sB.h;
+        xOuterStart = Math.min(sA.pt.x - sA.dim[0] / 2, sB.pt.x - sB.dim[0] / 2);
+        xOuterEnd   = Math.max(sA.pt.x + sA.dim[0] / 2, sB.pt.x + sB.dim[0] / 2);
+      }
+    } else if (cmRects.length) {
+      xOuterStart = Math.min(...cmRects.map(r => r[0])) - 9.5;
+      xOuterEnd   = Math.max(...cmRects.map(r => r[2])) + 9.5;
+    } else if (v.pontos && v.pontos.length >= 2) {
+      xOuterStart = Math.min(v.pontos[0].x, v.pontos[v.pontos.length - 1].x) - CX - 9.5;
+      xOuterEnd   = Math.max(v.pontos[0].x, v.pontos[v.pontos.length - 1].x) - CX + 9.5;
+    }
+
+    pStartOuter = new THREE.Vector3(xOuterStart, yCenter, 0);
+    pEndOuter   = new THREE.Vector3(xOuterEnd, yCenter, 0);
+    outerSpan   = xOuterEnd - xOuterStart;
+  } else {
+    dir = new THREE.Vector3(0, 1, 0);
+    normal = new THREE.Vector3(-1, 0, 0);
+
+    // Beam centerline X from DXF segments if available
+    let xCenter;
+    if (cmRects.length) {
+      xCenter = cmRects.reduce((acc, r) => acc + (r[0] + r[2]) / 2, 0) / cmRects.length;
+    } else if (v.pontos && v.pontos.length >= 2) {
+      xCenter = (v.pontos[0].x + v.pontos[v.pontos.length - 1].x) / 2 - CX;
+    } else {
+      xCenter = 0;
+    }
+
+    let yOuterStart, yOuterEnd;
+    if (nosList) {
+      const sA = resolveSupportData(nosList[0]);
+      const sB = resolveSupportData(nosList[nosList.length - 1]);
+      if (sA && sB) {
+        startSupportH = sA.h;
+        endSupportH = sB.h;
+        yOuterStart = Math.min(sA.pt.y - sA.dim[1] / 2, sB.pt.y - sB.dim[1] / 2);
+        yOuterEnd   = Math.max(sA.pt.y + sA.dim[1] / 2, sB.pt.y + sB.dim[1] / 2);
+      }
+    } else if (cmRects.length) {
+      yOuterStart = Math.min(...cmRects.map(r => r[1])) - 9.5;
+      yOuterEnd   = Math.max(...cmRects.map(r => r[3])) + 9.5;
+    } else if (v.pontos && v.pontos.length >= 2) {
+      yOuterStart = Math.min(v.pontos[0].y, v.pontos[v.pontos.length - 1].y) - CY - 9.5;
+      yOuterEnd   = Math.max(v.pontos[0].y, v.pontos[v.pontos.length - 1].y) - CY + 9.5;
+    }
+
+    pStartOuter = new THREE.Vector3(xCenter, yOuterStart, 0);
+    pEndOuter   = new THREE.Vector3(xCenter, yOuterEnd, 0);
+    outerSpan   = yOuterEnd - yOuterStart;
+  }
+
+  // Coleta todas as especificacoes de barras detalhadas
+  const barSpecs = [];
+
+  const collectRoleBars = (roleObj, roleName, defaultMat) => {
+    if (!roleObj) return;
+    if (Array.isArray(roleObj.barras) && roleObj.barras.length > 0) {
+      roleObj.barras.forEach(b => {
+        barSpecs.push({
+          role: roleName,
+          mark: b.n,
+          diam: b.diam || roleObj.diam || 10.0,
+          quant: b.quant || 1,
+          c: b.c,
+          comp_reto: b.comp_reto || (b.x_end - b.x_start),
+          x_start: b.x_start !== undefined ? b.x_start : 0,
+          x_end: b.x_end !== undefined ? b.x_end : (b.comp_reto || b.c),
+          dobra_esq: b.dobra_esq || 0,
+          dobra_dir: b.dobra_dir || 0,
+          camada: b.camada || 1,
+          offset_transv: b.offset_transv || 0,
+          mat: defaultMat,
+          tipo: b.funcao || roleName
+        });
+      });
+    } else {
+      const q = roleObj.quant || 2;
+      const diam = roleObj.diam || 10.0;
+      const c = roleObj.c || (outerSpan - 2 * cover);
+      barSpecs.push({
+        role: roleName,
+        mark: roleObj.n || null,
+        diam: diam,
+        quant: q,
+        c: c,
+        comp_reto: c,
+        x_start: cover,
+        x_end: cover + c,
+        dobra_esq: 0,
+        dobra_dir: 0,
+        camada: 1,
+        offset_transv: 0,
+        mat: defaultMat,
+        tipo: roleName
+      });
+    }
   };
 
-  // Gerador de barra segmentada individual com concordância e dobras verticais de 90°
-  const addRebarSegment = (spec) => {
+  if (v.rebar) {
+    collectRoleBars(v.rebar.inf, 'inf', mats.inf);
+    collectRoleBars(v.rebar.sup, 'sup', mats.sup);
+    collectRoleBars(v.rebar.pele, 'pele', mats.pele);
+    if (v.rebar.negativos && Array.isArray(v.rebar.negativos)) {
+      v.rebar.negativos.forEach(neg => collectRoleBars(neg, 'neg', mats.sup));
+    }
+  }
+
+  if (barSpecs.length === 0) return;
+
+  // Calculo matematico do pOrigin fiel ao DXF
+  const minXs = Math.min(...barSpecs.map(b => b.x_start));
+  const maxXe = Math.max(...barSpecs.map(b => b.x_end));
+
+  let pOrigin;
+  if (minXs >= 2.5) {
+    pOrigin = pStartOuter.clone();
+  } else if (maxXe <= outerSpan - 4.0) {
+    pOrigin = pStartOuter.clone().addScaledVector(dir, cover);
+  } else {
+    const shift = Math.max(0.0, (outerSpan - maxXe) / 2.0);
+    pOrigin = pStartOuter.clone().addScaledVector(dir, shift);
+  }
+
+  const group = new THREE.Group();
+  group.userData = { parentId: v.id, type: 'ARMADURA_VIGA' };
+
+  // Renderiza cada barra individual
+  const addRebarMesh = (spec, s1, s2, d1, d2, zLevel, yOffset) => {
     const diam = spec.diam || 10.0;
-    const rBar = barRadiusCm(diam);
-    const rBend = Math.max(2.0, (diam / 10.0) * 2.5);
-    const s1 = spec.x_start !== undefined ? spec.x_start : 0;
-    const s2 = spec.x_end !== undefined ? spec.x_end : (s1 + (spec.comp_reto || spec.c || spanSpanLen));
-    const d1 = spec.dobra_esq || 0;
-    const d2 = spec.dobra_dir || 0;
-    const hookDir1 = spec.hookDir1 !== undefined ? spec.hookDir1 : (spec.role === 'inf' ? 1 : -1);
-    const hookDir2 = spec.hookDir2 !== undefined ? spec.hookDir2 : (spec.role === 'inf' ? 1 : -1);
-    const zBaseLevel = spec.z !== undefined ? spec.z : (spec.role === 'inf' ? zInf : zSup);
-    const zLevel = spec.camada === 2 
-      ? zBaseLevel + (spec.role === 'inf' ? 2.5 : -2.5) 
-      : zBaseLevel;
+    const rBar = Math.max(0.25, (diam / 10.0) / 2.0);
+
+    const ptStart = pOrigin.clone()
+      .addScaledVector(dir, s1)
+      .addScaledVector(normal, yOffset);
+    ptStart.z = zLevel;
+
+    const ptEnd = pOrigin.clone()
+      .addScaledVector(dir, s2)
+      .addScaledVector(normal, yOffset);
+    ptEnd.z = zLevel;
 
     const pts = [];
 
-    // Gancho de extremidade esquerda (90° vertical para dentro do apoio)
+    // Gancho esquerdo vertical
     if (d1 > 0) {
-      const rb1 = Math.min(d1 * 0.5, rBend);
-      pts.push(getPoint3D(s1, spec.n, zLevel + hookDir1 * d1));
-      pts.push(getPoint3D(s1, spec.n, zLevel + hookDir1 * rb1));
-      pts.push(getPoint3D(s1 + rb1, spec.n, zLevel));
-    } else {
-      pts.push(getPoint3D(s1, spec.n, zLevel));
+      const isUp = (spec.role === 'inf');
+      const maxD1 = isUp ? Math.max(10, startSupportH - 6.0) : Math.max(10, hAlt - 6.0);
+      const effD1 = Math.min(d1, maxD1);
+      const hookZ = isUp ? (zLevel + effD1) : (zLevel - effD1);
+      pts.push(new THREE.Vector3(ptStart.x, ptStart.y, hookZ));
     }
 
-    // Gancho de extremidade direita (90° vertical para dentro do apoio)
+    pts.push(ptStart);
+    pts.push(ptEnd);
+
+    // Gancho direito vertical
     if (d2 > 0) {
-      const rb2 = Math.min(d2 * 0.5, rBend);
-      pts.push(getPoint3D(s2 - rb2, spec.n, zLevel));
-      pts.push(getPoint3D(s2, spec.n, zLevel + hookDir2 * rb2));
-      pts.push(getPoint3D(s2, spec.n, zLevel + hookDir2 * d2));
-    } else {
-      pts.push(getPoint3D(s2, spec.n, zLevel));
+      const isUp = (spec.role === 'inf');
+      const maxD2 = isUp ? Math.max(10, endSupportH - 6.0) : Math.max(10, hAlt - 6.0);
+      const effD2 = Math.min(d2, maxD2);
+      const hookZ = isUp ? (zLevel + effD2) : (zLevel - effD2);
+      pts.push(new THREE.Vector3(ptEnd.x, ptEnd.y, hookZ));
     }
 
-    let curve;
-    let tubularSegs;
+    let curve, tubularSegs;
     if (pts.length === 2) {
-      // Barra retilínea: geometria ultra-otimizada (apenas 2 subdivisões tubulares)
       curve = new THREE.LineCurve3(pts[0], pts[1]);
-      tubularSegs = 2;
+      tubularSegs = 12;
     } else {
-      // Barra com dobras: concordância suave de alta fidelidade
       curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.05);
       tubularSegs = Math.max(8, pts.length * 3);
     }
@@ -2899,7 +3032,7 @@ function buildContinuousBeamRebar(v, dxfSegments, mats) {
     mesh.userData = {
       parentId: v.id,
       type: 'BARRA_SEGMENTO',
-      mark: spec.mark ? `N${spec.mark}` : 'Barra',
+      mark: spec.mark ? ('N' + spec.mark) : 'Barra',
       diam: diam,
       c: spec.c || (s2 - s1 + d1 + d2),
       comp_reto: spec.comp_reto || (s2 - s1),
@@ -2911,227 +3044,65 @@ function buildContinuousBeamRebar(v, dxfSegments, mats) {
     group.add(mesh);
   };
 
-  // 2. Renderização Estruturada Exata (Quando DATA.vigas possui barras discretas)
-  if (hasExplicitData) {
-    // 2.1 Armadura Inferior (Positiva)
-    if (explicitInf && explicitInf.length) {
-      explicitInf.forEach(bar => {
-        const q = bar.quant || 1;
-        for (let k = 0; k < q; k++) {
-          let nNom = 0;
-          if (q === 2) {
-            nNom = k === 0 ? -yDist : yDist;
-          } else if (q > 2) {
-            nNom = -yDist + k * (2.0 * yDist / (q - 1));
-          }
-          let nEff = nNom;
-          if (bar.offset_transv !== undefined) {
-            nEff += bar.offset_transv;
-          } else if (bar.funcao === 'emenda_traspasse' || bar.lapOffset) {
-            const shift = bar.lapOffset || 1.8;
-            nEff += (nNom > 0 ? -shift : shift);
-          }
-          addRebarSegment({
-            mark: bar.n,
-            diam: bar.diam,
-            c: bar.c,
-            comp_reto: bar.comp_reto,
-            dobra_esq: bar.dobra_esq,
-            dobra_dir: bar.dobra_dir,
-            x_start: bar.x_start,
-            x_end: bar.x_end,
-            camada: bar.camada || 1,
-            n: nEff,
-            role: 'inf',
-            mat: mats.inf,
-            tipo: 'positivo'
-          });
-        }
-      });
-    }
-
-    // 2.2 Armadura Superior (Porta-estribos e Negativos de Apoio)
-    if (explicitSup && explicitSup.length) {
-      explicitSup.forEach(bar => {
-        const isNeg = bar.tipo === 'negativo' || bar.funcao === 'negativo_pilar';
-        const q = bar.quant || 1;
-        for (let k = 0; k < q; k++) {
-          let nNom = 0;
-          if (isNeg) {
-            if (q === 1) {
-              nNom = 0;
-            } else if (q === 2) {
-              nNom = k === 0 ? -yDist * 0.45 : yDist * 0.45;
-            } else {
-              nNom = -yDist * 0.5 + k * (yDist / (q - 1));
-            }
-          } else {
-            if (q === 2) {
-              nNom = k === 0 ? -yDist : yDist;
-            } else if (q > 2) {
-              nNom = -yDist + k * (2.0 * yDist / (q - 1));
-            }
-          }
-          let nEff = nNom;
-          if (bar.offset_transv !== undefined) {
-            nEff += bar.offset_transv;
-          } else if (bar.funcao === 'emenda_traspasse' || bar.lapOffset) {
-            const shift = bar.lapOffset || 1.8;
-            nEff += (nNom > 0 ? -shift : shift);
-          }
-          addRebarSegment({
-            mark: bar.n,
-            diam: bar.diam,
-            c: bar.c,
-            comp_reto: bar.comp_reto,
-            dobra_esq: bar.dobra_esq,
-            dobra_dir: bar.dobra_dir,
-            x_start: bar.x_start,
-            x_end: bar.x_end,
-            camada: bar.camada || 1,
-            n: nEff,
-            z: isNeg ? zSup - 1.2 : zSup,
-            role: isNeg ? 'neg' : 'sup',
-            mat: mats.sup,
-            tipo: isNeg ? 'negativo' : 'longitudinal'
-          });
-        }
-      });
-    }
-
-    // 2.3 Armadura de Pele (Vigas h >= 45 cm)
-    if (explicitPele && explicitPele.length) {
-      explicitPele.forEach(bar => {
-        const totalPele = bar.quant || 2;
-        const perSide = Math.max(1, Math.round(totalPele / 2));
-        for (let k = 0; k < totalPele; k++) {
-          const side = (k % 2 === 0) ? -yDist : yDist;
-          const levelIdx = Math.floor(k / 2);
-          const zPele = zInf + (levelIdx + 1) * (zSup - zInf) / (perSide + 1);
-          let nEff = side;
-          if (bar.offset_transv !== undefined) {
-            const shift = Math.abs(bar.offset_transv);
-            nEff += (side > 0 ? -shift : shift);
-          } else if (bar.funcao === 'pele_complementar' || bar.funcao === 'pele_complemento' || bar.lapOffset) {
-            const shift = bar.lapOffset || 1.5;
-            nEff += (side > 0 ? -shift : shift);
-          }
-          addRebarSegment({
-            mark: bar.n,
-            diam: bar.diam,
-            c: bar.c,
-            comp_reto: bar.comp_reto,
-            dobra_esq: bar.dobra_esq,
-            dobra_dir: bar.dobra_dir,
-            x_start: bar.x_start,
-            x_end: bar.x_end,
-            camada: 1,
-            n: nEff,
-            z: zPele,
-            role: 'pele',
-            mat: mats.pele,
-            tipo: 'pele'
-          });
-        }
-      });
-    }
-  } else {
-    // 3. Fallback Estruturado para Descrições em Texto (Zero Distorção Geométrica)
-    const addLegacyLongitudinal = (desc, z, material, role) => {
-      const groups = pdfBarGroups(desc);
-      if (!groups.length) return;
-      const maxQuant = Math.max(...groups.map(g => g.quant));
-      for (let ord = 0; ord < maxQuant; ord++) {
-        const nNom = maxQuant > 1 ? -yDist + ord * (2.0 * yDist) / (maxQuant - 1) : 0;
-        let currS = 0;
-        groups.forEach((entry, idx) => {
-          const pLen = entry.len && entry.len > 0 ? entry.len : spanSpanLen;
-          const s1 = currS;
-          const s2 = Math.min(spanSpanLen, s1 + pLen);
-          const isOverlapping = s2 > spanSpanLen || idx > 0;
-          const nEff = isOverlapping ? nNom + (nNom >= 0 ? -1.8 : 1.8) : nNom;
-          addRebarSegment({
-            diam: entry.diam,
-            c: pLen,
-            comp_reto: s2 - s1,
-            x_start: s1,
-            x_end: s2,
-            n: nEff,
-            z: z,
-            role: role,
-            mat: material
-          });
-          currS += pLen;
-        });
-      }
-    };
-    addLegacyLongitudinal(v.rebar?.inf?.desc, zInf, mats.inf, 'inf');
-    addLegacyLongitudinal(v.rebar?.sup?.desc, zSup, mats.sup, 'sup');
-  }
-
-  // 4. Renderização Precisa dos Estribos por Zonas de Cisalhamento
-  const isDuplo = !!(v.rebar?.estribos?.duplo || bLarg >= 38);
-  const stirrupDiam = v.rebar?.estribos?.diam || 5.0;
-  const rEstribo = barRadiusCm(stirrupDiam);
-
-  // Constrói malha retangular fechada com cantos arredondados (NBR 6118)
-  const makeStirrupLoopMesh = (centerY, halfW) => {
-    const rc = 1.0; // Raio interno dos cantos (cm)
-    const pts = [
-      new THREE.Vector3(0, centerY - halfW + rc, zInf),
-      new THREE.Vector3(0, centerY + halfW - rc, zInf),
-      new THREE.Vector3(0, centerY + halfW, zInf + rc),
-      new THREE.Vector3(0, centerY + halfW, zSup - rc),
-      new THREE.Vector3(0, centerY + halfW - rc, zSup),
-      new THREE.Vector3(0, centerY - halfW + rc, zSup),
-      new THREE.Vector3(0, centerY - halfW, zSup - rc),
-      new THREE.Vector3(0, centerY - halfW, zInf + rc)
-    ];
-    const loopCurve = new THREE.CatmullRomCurve3(pts, true, 'centripetal', 0.05);
-    return new THREE.Mesh(new THREE.TubeGeometry(loopCurve, 20, rEstribo, 6, true), mats.stirrup);
-  };
-
-  const placeStirrupAt = (s) => {
-    const sGroup = new THREE.Group();
-    sGroup.position.copy(getPoint3D(s, 0, 0));
-    sGroup.rotation.z = Math.atan2(dir.y, dir.x);
-    if (isDuplo) {
-      const halfW = yDist / 2.0;
-      sGroup.add(makeStirrupLoopMesh(-yDist / 2.0, halfW));
-      sGroup.add(makeStirrupLoopMesh(yDist / 2.0, halfW));
+  barSpecs.forEach(spec => {
+    let zLevel = zInf;
+    if (spec.role === 'sup' || spec.role === 'neg') {
+      zLevel = (spec.camada === 2) ? (zSup - 2.5) : zSup;
+    } else if (spec.role === 'pele') {
+      zLevel = (zInf + zSup) / 2.0;
     } else {
-      sGroup.add(makeStirrupLoopMesh(0, yDist));
+      zLevel = (spec.camada === 2) ? (zInf + 2.5) : zInf;
     }
-    group.add(sGroup);
+
+    const s1 = spec.x_start;
+    const s2 = spec.x_end;
+    const d1 = spec.dobra_esq || 0;
+    const d2 = spec.dobra_dir || 0;
+    const q  = Math.max(1, spec.quant || 1);
+
+    if (q === 1) {
+      addRebarMesh(spec, s1, s2, d1, d2, zLevel, spec.offset_transv || 0);
+    } else if (q === 2) {
+      addRebarMesh(spec, s1, s2, d1, d2, zLevel, -yDist);
+      addRebarMesh(spec, s1, s2, d1, d2, zLevel,  yDist);
+    } else {
+      const step = (2 * yDist) / (q - 1);
+      for (let i = 0; i < q; i++) {
+        addRebarMesh(spec, s1, s2, d1, d2, zLevel, -yDist + i * step);
+      }
+    }
+  });
+
+  // Estribos ao longo dos trechos da viga
+  const addStirrupRing = (sCoord) => {
+    const ringPts = [
+      new THREE.Vector3(-yDist, 0, zInf),
+      new THREE.Vector3( yDist, 0, zInf),
+      new THREE.Vector3( yDist, 0, zSup),
+      new THREE.Vector3(-yDist, 0, zSup)
+    ];
+    const curve = new THREE.CatmullRomCurve3(ringPts, true, 'catmullrom', 0.05);
+    const geom = new THREE.TubeGeometry(curve, 16, 0.25, 4, true);
+    const ring = new THREE.Mesh(geom, mats.stirrup);
+
+    const pos = pOrigin.clone().addScaledVector(dir, s1_clamp(sCoord));
+    ring.position.set(pos.x, pos.y, 0);
+
+    const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+    ring.quaternion.copy(quat);
+
+    ring.userData = { parentId: v.id, type: 'ESTRIBO', diam: 5.0 };
+    group.add(ring);
   };
 
-  if (explicitZonas && explicitZonas.length) {
-    // Distribuição por zonas nominais de cisalhamento
-    explicitZonas.forEach(zona => {
-      const espac = zona.espac || 15.0;
-      const count = (isDuplo && (zona.quant || 0) > Math.round((zona.x_end - zona.x_start) / (espac * 0.75)))
-        ? Math.round(zona.quant / 2)
-        : (zona.quant || Math.max(1, Math.floor((zona.x_end - zona.x_start) / espac)));
-      const zLen = zona.x_end - zona.x_start;
-      const step = count > 1 ? zLen / (count - 1) : 0;
-      for (let i = 0; i < count; i++) {
-        placeStirrupAt(zona.x_start + i * step);
-      }
-    });
-  } else {
-    // Distribuição por vão livre com recobrimento de 5 cm das faces dos apoios
-    rects.forEach(r => {
-      const sStartSpan = r.a.clone().sub(pOrigin).dot(dir) + 5.0;
-      const sEndSpan   = r.b.clone().sub(pOrigin).dot(dir) - 5.0;
-      const spanLen    = sEndSpan - sStartSpan;
-      if (spanLen <= 0) return;
-      const espac = v.rebar?.estribos?.espac || 15.0;
-      const count = Math.max(2, Math.floor(spanLen / espac) + 1);
-      const step  = spanLen / (count - 1);
-      for (let i = 0; i < count; i++) {
-        placeStirrupAt(sStartSpan + i * step);
-      }
-    });
+  const s1_clamp = (s) => Math.max(cover, Math.min(outerSpan - cover, s));
+
+  // Distribuicao de estribos ao longo do vão
+  const espac = 15.0;
+  const numEstribos = Math.max(3, Math.floor((outerSpan - 2 * cover) / espac));
+  const realStep = (outerSpan - 2 * cover) / numEstribos;
+  for (let i = 0; i <= numEstribos; i++) {
+    addStirrupRing(cover + i * realStep);
   }
 
   groupBeamRebars.add(group);
@@ -3153,27 +3124,29 @@ function buildBeams() {
     const zBase = zTopo - hAlt;
     const zMid  = (zTopo + zBase) / 2;
 
-    const rawList = v.pontos || v.nos || [];
     const dxfSegments = DXF_FORM.beamSegments[v.id] || [];
-    const segments = dxfSegments.length ? dxfSegments.map((rect, index) => {
-      const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]);
-      const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
-      const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
-      const a = horizontal ? [x1, (y1 + y2) / 2] : [(x1 + x2) / 2, y1];
-      const b = horizontal ? [x2, (y1 + y2) / 2] : [(x1 + x2) / 2, y2];
-      return { a, b, name: `Forma DXF ${index + 1}` };
-    }) : rawList.slice(0, -1).map((node, index) => ({ node, next: rawList[index + 1] }));
+    const segments = [];
+
+    if (dxfSegments && dxfSegments.length) {
+      dxfSegments.forEach((rect, index) => {
+        const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]);
+        const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
+        const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
+        const a = horizontal ? new THREE.Vector3(x1 - CX, (y1 + y2) / 2 - CY, zMid) : new THREE.Vector3((x1 + x2) / 2 - CX, y1 - CY, zMid);
+        const b = horizontal ? new THREE.Vector3(x2 - CX, (y1 + y2) / 2 - CY, zMid) : new THREE.Vector3((x1 + x2) / 2 - CX, y2 - CY, zMid);
+        segments.push({ a, b, name: 'Trecho ' + (index + 1) });
+      });
+    } else if (v.pontos && v.pontos.length >= 2) {
+      for (let i = 0; i < v.pontos.length - 1; i++) {
+        const ptA = new THREE.Vector3(v.pontos[i].x - CX, v.pontos[i].y - CY, zMid);
+        const ptB = new THREE.Vector3(v.pontos[i + 1].x - CX, v.pontos[i + 1].y - CY, zMid);
+        segments.push({ a: ptA, b: ptB, name: 'Trecho ' + (i + 1) });
+      }
+    }
 
     for (const segment of segments) {
-      const r1 = segment.a
-        ? { pt: new THREE.Vector3(segment.a[0] - CX, segment.a[1] - CY, zMid), name: segment.name }
-        : resolveBeamNode(segment.node, zMid);
-      const r2 = segment.b
-        ? { pt: new THREE.Vector3(segment.b[0] - CX, segment.b[1] - CY, zMid), name: segment.name }
-        : resolveBeamNode(segment.next, zMid);
-      const p1 = r1.pt;
-      const p2 = r2.pt;
-
+      const p1 = segment.a;
+      const p2 = segment.b;
       const dx = p2.x - p1.x;
       const dy = p2.y - p1.y;
       const dist = Math.hypot(dx, dy);
@@ -3184,7 +3157,7 @@ function buildBeams() {
       const mesh = new THREE.Mesh(geom, matBeamConcrete.clone());
       mesh.position.set((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, zMid);
       mesh.rotation.z = angle;
-      mesh.userData = { type: 'VIGA', id: v.id, secao: v.secao, trecho: `${r1.name}-${r2.name}`, comp: dist, desc: v.desc };
+      mesh.userData = { type: 'VIGA', id: v.id, secao: v.secao, trecho: segment.name, comp: dist, desc: v.desc };
       groupConcreteBeams.add(mesh);
       allObjects.push(mesh);
 
@@ -3192,104 +3165,9 @@ function buildBeams() {
       edges.position.copy(mesh.position);
       edges.rotation.copy(mesh.rotation);
       groupConcreteBeams.add(edges);
-
-      if (!dxfSegments.length) {
-      const beamRebarGroup = new THREE.Group();
-      beamRebarGroup.userData = { parentId: v.id };
-
-      const zInf = zBase + 4;
-      const zSup = zTopo - 4;
-      const yDist = (bLarg - 6) / 2;
-
-      // 1. Barras inferiores longitudinais com diâmetro e quantidade exatos do PDF
-      const numInf = v.rebar && v.rebar.inf ? v.rebar.inf.quant : (bLarg >= 35 ? 3 : 2);
-      const diamInf = v.rebar && v.rebar.inf ? v.rebar.inf.diam : 10.0;
-      const rInf = barRadiusCm(diamInf);
-      const infStep = numInf > 1 ? (yDist * 2) / (numInf - 1) : 0;
-      for (let bIdx = 0; bIdx < numInf; bIdx++) {
-        const yOff = -yDist + bIdx * infStep;
-        const infPts = [
-          new THREE.Vector3(-dist/2 + 4, yOff, zInf - zMid),
-          new THREE.Vector3(dist/2 - 4, yOff, zInf - zMid)
-        ];
-        const curve = new THREE.LineCurve3(infPts[0], infPts[1]);
-        beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 12, rInf, 6, false), rebarInfMat));
-      }
-
-      // 2. Barras superiores longitudinais com diâmetro e quantidade exatos do PDF
-      const numSup = v.rebar && v.rebar.sup ? v.rebar.sup.quant : (bLarg >= 35 ? 3 : 2);
-      const diamSup = v.rebar && v.rebar.sup ? v.rebar.sup.diam : 8.0;
-      const rSup = barRadiusCm(diamSup);
-      const supStep = numSup > 1 ? (yDist * 2) / (numSup - 1) : 0;
-      for (let bIdx = 0; bIdx < numSup; bIdx++) {
-        const yOff = -yDist + bIdx * supStep;
-        const supPts = [
-          new THREE.Vector3(-dist/2 + 4, yOff, zSup - zMid),
-          new THREE.Vector3(dist/2 - 4, yOff, zSup - zMid)
-        ];
-        const curve = new THREE.LineCurve3(supPts[0], supPts[1]);
-        beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 12, rSup, 6, false), rebarSupMat));
-      }
-
-      // 3. Armadura de Pele (vigas de altura h >= 45 cm, ex: VB1, VB2, VB13)
-      if (v.rebar && v.rebar.pele) {
-        const pelePerFace = Math.max(1, Math.ceil(v.rebar.pele.quant / 2));
-        const peleLevels = Array.from({ length: pelePerFace }, (_, i) => pelePerFace === 1 ? 0 : -9 + (18 * i) / (pelePerFace - 1));
-        const rPele = barRadiusCm(v.rebar.pele.diam);
-        [-yDist, yDist].forEach(yOff => {
-          peleLevels.forEach(zOff => {
-            const pelePts = [
-              new THREE.Vector3(-dist/2 + 4, yOff, zOff),
-              new THREE.Vector3(dist/2 - 4, yOff, zOff)
-            ];
-            const curve = new THREE.LineCurve3(pelePts[0], pelePts[1]);
-            beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 12, rPele, 6, false), rebarPeleMat));
-          });
-        });
-      }
-
-      // 4. Estribos fechados com espaçamento exato da prancha
-      const stirrupSpacing = v.rebar && v.rebar.estribos ? v.rebar.estribos.espac : 15;
-      const stirrupDiam = v.rebar && v.rebar.estribos ? v.rebar.estribos.diam : 5.0;
-      const isDuplo = v.rebar && v.rebar.estribos && v.rebar.estribos.duplo;
-      const numStirrups = Math.max(2, Math.floor((dist - 12) / stirrupSpacing));
-      const step = (dist - 12) / (numStirrups - 1);
-
-      for (let s = 0; s < numStirrups; s++) {
-        const sX = -dist/2 + 6 + s * step;
-
-        if (isDuplo) {
-          // Estribos duplos em paralelo para vigas largas de 40 cm (VB4 e VB22)
-          [-yDist/2, yDist/2].forEach(yC => {
-            const halfW = yDist / 2;
-            const pts = [
-              new THREE.Vector3(sX, yC - halfW, zInf - zMid),
-              new THREE.Vector3(sX, yC + halfW, zInf - zMid),
-              new THREE.Vector3(sX, yC + halfW, zSup - zMid),
-              new THREE.Vector3(sX, yC - halfW, zSup - zMid)
-            ];
-            const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
-            beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 20, barRadiusCm(stirrupDiam), 6, true), stirrupMat));
-          });
-        } else {
-          // Estribo retangular fechado padrão
-          const pts = [
-            new THREE.Vector3(sX, -yDist, zInf - zMid),
-            new THREE.Vector3(sX, yDist, zInf - zMid),
-            new THREE.Vector3(sX, yDist, zSup - zMid),
-            new THREE.Vector3(sX, -yDist, zSup - zMid)
-          ];
-          const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
-          beamRebarGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 20, barRadiusCm(stirrupDiam), 6, true), stirrupMat));
-        }
-      }
-
-      beamRebarGroup.position.copy(mesh.position);
-      beamRebarGroup.rotation.copy(mesh.rotation);
-      groupBeamRebars.add(beamRebarGroup);
-      }
     }
-    if (dxfSegments.length) buildContinuousBeamRebar(v, dxfSegments, { inf: rebarInfMat, sup: rebarSupMat, pele: rebarPeleMat, stirrup: stirrupMat });
+
+    buildContinuousBeamRebar(v, dxfSegments, { inf: rebarInfMat, sup: rebarSupMat, pele: rebarPeleMat, stirrup: stirrupMat });
   });
 }
 
