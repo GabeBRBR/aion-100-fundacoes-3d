@@ -1330,21 +1330,22 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
         <div>
           <div class="section-label">Resumo de Aço Consolidado</div>
           <div class="steel-summary-card">
-            <h3>Totais de Aço por Bitola (Baldrame + Blocos)</h3>
+            <h3>Totais de Aço por Bitola (Consolidado Obra)</h3>
             <table class="summary-table">
               <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso (+10%)</th></tr></thead>
               <tbody>
                 <tr><td><strong>Ø 5,0 mm</strong></td><td><span class="badge-ca60">CA-60</span></td><td>1.614,7 m</td><td><strong>273,7 kg</strong></td></tr>
-                <tr><td><strong>Ø 6,3 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>257,4 m</td><td><strong>69,2 kg</strong></td></tr>
+                <tr><td><strong>Ø 6,3 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>2.759,6 m</td><td><strong>743,5 kg</strong></td></tr>
                 <tr><td><strong>Ø 8,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>584,9 m</td><td><strong>253,7 kg</strong></td></tr>
-                <tr><td><strong>Ø 10,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>388,0 m</td><td><strong>263,0 kg</strong></td></tr>
-                <tr><td><strong>Ø 12,5 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>191,1 m</td><td><strong>202,3 kg</strong></td></tr>
+                <tr><td><strong>Ø 10,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>440,8 m</td><td><strong>298,8 kg</strong></td></tr>
+                <tr><td><strong>Ø 12,5 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>2.005,5 m</td><td><strong>2.124,3 kg</strong></td></tr>
                 <tr><td><strong>Ø 16,0 mm</strong></td><td><span class="badge-ca50">CA-50</span></td><td>203,0 m</td><td><strong>352,1 kg</strong></td></tr>
               </tbody>
               <tfoot>
-                <tr><td colspan="3" style="font-weight:700;">TOTAL BALDRAME + BLOCOS</td><td style="font-weight:800; color:var(--accent); text-align:right;">1.414,1 kg</td></tr>
-                <tr><td colspan="3" style="color:var(--muted); font-size:10px;">Estacas C40 (45 un)</td><td style="color:var(--muted); font-size:10px; text-align:right;">2.632,2 kg</td></tr>
-                <tr><td colspan="3" style="font-weight:800; color:#38bdf8;">TOTAL AÇO DA OBRA</td><td style="font-weight:800; color:#38bdf8; text-align:right;">4.046,3 kg</td></tr>
+                <tr><td colspan="3" style="color:var(--muted); font-size:10px;">Vigas Baldrames (VB1..22)</td><td style="color:var(--muted); font-size:10px; text-align:right;">812,2 kg</td></tr>
+                <tr><td colspan="3" style="color:var(--muted); font-size:10px;">Blocos de Coroamento (B1..27)</td><td style="color:var(--muted); font-size:10px; text-align:right;">601,9 kg</td></tr>
+                <tr><td colspan="3" style="color:var(--muted); font-size:10px;">Estacas Escavadas C40 (45 un)</td><td style="color:var(--muted); font-size:10px; text-align:right;">2.632,2 kg</td></tr>
+                <tr style="border-top:1px solid rgba(255,255,255,0.15);"><td colspan="3" style="font-weight:800; color:#38bdf8;">TOTAL AÇO DA OBRA</td><td style="font-weight:800; color:#38bdf8; text-align:right;">4.046,3 kg</td></tr>
               </tfoot>
             </table>
           </div>
@@ -1368,6 +1369,32 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 // --- BANCO DE DADOS ESTRUTURAL COMPLETO E FIEL AOS PDFS ---
 // Centro da obra: X = 11711.2 cm, Y = 50524.5 cm
 const DATA = {
+  resumoAco: {
+    porBitola: [
+      { bitola: 5.0,  aco: "CA-60", pecas: 1280, blocos_m: 785.3,  vigas_m: 829.4,  estacas_m: 0.0,     total_m: 1614.7,  peso_10_kg: 273.7,  perc: 6.8 },
+      { bitola: 6.3,  aco: "CA-50", pecas: 2206, blocos_m: 75.6,   vigas_m: 181.8,  estacas_m: 2502.16, total_m: 2759.56, peso_10_kg: 743.53, perc: 18.4 },
+      { bitola: 8.0,  aco: "CA-50", pecas: 181,  blocos_m: 219.7,  vigas_m: 350.9,  estacas_m: 0.0,     total_m: 584.9,   peso_10_kg: 253.7,  perc: 6.3 },
+      { bitola: 10.0, aco: "CA-50", pecas: 168,  blocos_m: 162.1,  vigas_m: 225.9,  estacas_m: 52.80,   total_m: 440.8,   peso_10_kg: 298.84, perc: 7.4 },
+      { bitola: 12.5, aco: "CA-50", pecas: 380,  blocos_m: 69.6,   vigas_m: 121.5,  estacas_m: 1814.40, total_m: 2005.5,  peso_10_kg: 2124.30,perc: 52.5 },
+      { bitola: 16.0, aco: "CA-50", pecas: 51,   blocos_m: 97.8,   vigas_m: 105.2,  estacas_m: 0.0,     total_m: 203.0,   peso_10_kg: 352.1,  perc: 8.7 }
+    ],
+    totaisPorCategoria: {
+      ca60: { total_m: 1614.70, peso_10_kg: 273.70, perc: 6.8 },
+      ca50: { total_m: 5993.76, peso_10_kg: 3772.47, perc: 93.2 }
+    },
+    totaisPorElemento: {
+      vigas:   { total_m: 1829.00, peso_10_kg: 812.20, concreto_m3: 6.84,  formas_m2: 86.46, pecas: 1026 },
+      blocos:  { total_m: 1410.10, peso_10_kg: 601.90, concreto_m3: 10.70, formas_m2: 56.88, pecas: 738 },
+      estacas: { total_m: 4369.36, peso_10_kg: 2632.16,concreto_m3: 37.70, formas_m2: 0.0,   pecas: 2502 }
+    },
+    totalGeral: {
+      total_m: 7608.46,
+      peso_10_kg: 4046.26,
+      concreto_m3: 55.24,
+      formas_m2: 143.34,
+      pecas: 4266
+    }
+  },
   center: [11711.2, 50524.5],
   blocos: {
     // Folha 02
@@ -3418,6 +3445,8 @@ function buildUI() {
 
     // --- Handlers do Modal de Resumo de Aço ---
   const modalSteel = document.getElementById('modalSteelSummary');
+  window.modalResumoAco = document.getElementById('modalResumoAco');
+  window.modalQuadroAco = document.getElementById('modalQuadroAco');
   const openModal = () => { if (modalSteel) modalSteel.style.display = 'flex'; };
   const closeModal = () => { if (modalSteel) modalSteel.style.display = 'none'; };
 
@@ -3896,108 +3925,194 @@ window.addEventListener('DOMContentLoaded', init);
       <!-- ABA MODAL 1: CONSOLIDADO DE AÇO -->
       <div id="modalGeral" class="modal-pane">
         <div class="notice-box" style="margin-bottom:14px;">
-          <strong>Consolidação Geral do Aço (NBR 6118 / NBR 6122):</strong><br>
-          Valores transcritos diretamente dos resumos das pranchas oficiais EST-01 a EST-08. O aço CA-50 e CA-60 inclui a margem técnica de 10% estabelecida no projeto estrutural.
+          <strong>Consolidação Geral do Aço (NBR 6118 / NBR 6122 / NBR 14931):</strong><br>
+          Valores auditados e transcritos diretamente do DXF oficial de engenharia (<code>compilado.dxf</code>) e das pranchas EST-01 a EST-08. O quantitativo inclui vigas baldrames, blocos de coroamento e estacas escavadas com a margem técnica oficial de 10% de perda por desponte e traspasse.
         </div>
 
-        <table class="table-steel-full">
+        <div style="margin-bottom:8px; font-weight:700; font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:0.05em;">
+          Tabela de Resumo de Aço Consolidado por Bitola (Vigas, Blocos e Estacas)
+        </div>
+        <table class="table-steel-full" id="modalResumoAco" data-role="resumo-aco-consolidado">
           <thead>
             <tr>
               <th>Bitola (mm)</th>
               <th>Aço</th>
               <th style="text-align:right;">Blocos (m)</th>
               <th style="text-align:right;">Vigas (m)</th>
+              <th style="text-align:right;">Estacas (m)</th>
               <th style="text-align:right;">Comp. Total (m)</th>
               <th style="text-align:right;">Peso + 10% (kg)</th>
               <th style="text-align:right;">% do Peso</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr data-bitola="5.0" data-grade="CA-60" data-blocos-m="785.3" data-vigas-m="829.4" data-estacas-m="0.0" data-total-m="1614.7" data-weight="273.7">
               <td><strong>Ø 5,0 mm</strong></td>
               <td><span class="badge-ca60">CA-60</span></td>
               <td style="text-align:right;">785,3 m</td>
               <td style="text-align:right;">829,4 m</td>
+              <td style="text-align:right; color:var(--muted);">-</td>
               <td style="text-align:right; font-weight:700;">1.614,7 m</td>
               <td style="text-align:right; font-weight:700; color:#fbbf24;">273,7 kg</td>
-              <td style="text-align:right; color:var(--muted);">19,3%</td>
+              <td style="text-align:right; color:var(--muted);">6,8%</td>
             </tr>
-            <tr>
+            <tr data-bitola="6.3" data-grade="CA-50" data-blocos-m="75.6" data-vigas-m="181.8" data-estacas-m="2502.16" data-total-m="2759.56" data-weight="743.53">
               <td><strong>Ø 6,3 mm</strong></td>
               <td><span class="badge-ca50">CA-50</span></td>
               <td style="text-align:right;">75,6 m</td>
               <td style="text-align:right;">181,8 m</td>
-              <td style="text-align:right; font-weight:700;">257,4 m</td>
-              <td style="text-align:right; font-weight:700; color:#38bdf8;">69,2 kg</td>
-              <td style="text-align:right; color:var(--muted);">4,9%</td>
+              <td style="text-align:right;">2.502,2 m</td>
+              <td style="text-align:right; font-weight:700;">2.759,6 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">743,5 kg</td>
+              <td style="text-align:right; color:var(--muted);">18,4%</td>
             </tr>
-            <tr>
+            <tr data-bitola="8.0" data-grade="CA-50" data-blocos-m="219.7" data-vigas-m="350.9" data-estacas-m="0.0" data-total-m="584.9" data-weight="253.7">
               <td><strong>Ø 8,0 mm</strong></td>
               <td><span class="badge-ca50">CA-50</span></td>
               <td style="text-align:right;">219,7 m</td>
-              <td style="text-align:right;">365,2 m</td>
+              <td style="text-align:right;">350,9 m</td>
+              <td style="text-align:right; color:var(--muted);">-</td>
               <td style="text-align:right; font-weight:700;">584,9 m</td>
               <td style="text-align:right; font-weight:700; color:#38bdf8;">253,7 kg</td>
-              <td style="text-align:right; color:var(--muted);">17,9%</td>
+              <td style="text-align:right; color:var(--muted);">6,3%</td>
             </tr>
-            <tr>
+            <tr data-bitola="10.0" data-grade="CA-50" data-blocos-m="162.1" data-vigas-m="225.9" data-estacas-m="52.80" data-total-m="440.8" data-weight="298.84">
               <td><strong>Ø 10,0 mm</strong></td>
               <td><span class="badge-ca50">CA-50</span></td>
               <td style="text-align:right;">162,1 m</td>
               <td style="text-align:right;">225,9 m</td>
-              <td style="text-align:right; font-weight:700;">388,0 m</td>
-              <td style="text-align:right; font-weight:700; color:#38bdf8;">263,0 kg</td>
-              <td style="text-align:right; color:var(--muted);">18,6%</td>
+              <td style="text-align:right;">52,8 m</td>
+              <td style="text-align:right; font-weight:700;">440,8 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">298,8 kg</td>
+              <td style="text-align:right; color:var(--muted);">7,4%</td>
             </tr>
-            <tr>
+            <tr data-bitola="12.5" data-grade="CA-50" data-blocos-m="69.6" data-vigas-m="121.5" data-estacas-m="1814.40" data-total-m="2005.5" data-weight="2124.30">
               <td><strong>Ø 12,5 mm</strong></td>
               <td><span class="badge-ca50">CA-50</span></td>
               <td style="text-align:right;">69,6 m</td>
               <td style="text-align:right;">121,5 m</td>
-              <td style="text-align:right; font-weight:700;">191,1 m</td>
-              <td style="text-align:right; font-weight:700; color:#38bdf8;">202,3 kg</td>
-              <td style="text-align:right; color:var(--muted);">14,3%</td>
+              <td style="text-align:right;">1.814,4 m</td>
+              <td style="text-align:right; font-weight:700;">2.005,5 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">2.124,3 kg</td>
+              <td style="text-align:right; color:var(--muted);">52,5%</td>
             </tr>
-            <tr>
+            <tr data-bitola="16.0" data-grade="CA-50" data-blocos-m="97.8" data-vigas-m="105.2" data-estacas-m="0.0" data-total-m="203.0" data-weight="352.1">
               <td><strong>Ø 16,0 mm</strong></td>
               <td><span class="badge-ca50">CA-50</span></td>
               <td style="text-align:right;">97,8 m</td>
               <td style="text-align:right;">105,2 m</td>
+              <td style="text-align:right; color:var(--muted);">-</td>
               <td style="text-align:right; font-weight:700;">203,0 m</td>
               <td style="text-align:right; font-weight:700; color:#38bdf8;">352,1 kg</td>
-              <td style="text-align:right; color:var(--muted);">24,9%</td>
+              <td style="text-align:right; color:var(--muted);">8,7%</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="4" style="color:#38bdf8;">SUBTOTAL CA-50 (BALDRAMES + BLOCOS)</td>
-              <td style="text-align:right;">1.624,4 m</td>
-              <td style="text-align:right; color:#38bdf8;">1.140,4 kg</td>
-              <td style="text-align:right;">80,6%</td>
+              <td colspan="5" style="color:#38bdf8;">SUBTOTAL CA-50 (TODOS ELEMENTOS)</td>
+              <td style="text-align:right; font-weight:700;">5.993,8 m</td>
+              <td style="text-align:right; color:#38bdf8; font-weight:700;">3.772,5 kg</td>
+              <td style="text-align:right;">93,2%</td>
             </tr>
             <tr>
-              <td colspan="4" style="color:#fbbf24;">SUBTOTAL CA-60 (BALDRAMES + BLOCOS)</td>
-              <td style="text-align:right;">1.614,7 m</td>
-              <td style="text-align:right; color:#fbbf24;">273,7 kg</td>
-              <td style="text-align:right;">19,4%</td>
+              <td colspan="5" style="color:#fbbf24;">SUBTOTAL CA-60 (TODOS ELEMENTOS)</td>
+              <td style="text-align:right; font-weight:700;">1.614,7 m</td>
+              <td style="text-align:right; color:#fbbf24; font-weight:700;">273,7 kg</td>
+              <td style="text-align:right;">6,8%</td>
             </tr>
-            <tr style="border-top:2px solid var(--accent); font-size:12.5px;">
-              <td colspan="4" style="color:var(--accent); font-weight:800;">TOTAL BALDRAME + BLOCOS</td>
-              <td style="text-align:right; font-weight:800;">3.239,1 m</td>
-              <td style="text-align:right; font-weight:800; color:var(--accent);">1.414,1 kg</td>
-              <td style="text-align:right; font-weight:800;">100,0%</td>
+            <tr style="border-top:1px solid rgba(255,255,255,0.12);">
+              <td colspan="5" style="color:var(--muted); font-size:11.5px;">Subtotal Vigas Baldrames (VB1 a VB22)</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">1.829,0 m</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">812,2 kg</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">20,1%</td>
             </tr>
-            <tr style="font-size:12px;">
-              <td colspan="4" style="color:#94a3b8;">ESTACAS ESCAVADAS C40 (45 UNIDADES)</td>
-              <td style="text-align:right;">5.058,0 m</td>
-              <td style="text-align:right; font-weight:700; color:#94a3b8;">2.632,2 kg</td>
-              <td style="text-align:right;">—</td>
+            <tr>
+              <td colspan="5" style="color:var(--muted); font-size:11.5px;">Subtotal Blocos de Coroamento (B1 a B27)</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">1.410,1 m</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">601,9 kg</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">14,9%</td>
             </tr>
-            <tr style="border-top:2px solid #38bdf8; font-size:13px;">
-              <td colspan="4" style="color:#38bdf8; font-weight:800;">TOTAL GERAL DE AÇO DA OBRA</td>
-              <td style="text-align:right; font-weight:800;">8.297,1 m</td>
-              <td style="text-align:right; font-weight:800; color:#38bdf8;">4.046,3 kg</td>
-              <td style="text-align:right; font-weight:800;">—</td>
+            <tr>
+              <td colspan="5" style="color:var(--muted); font-size:11.5px;">Subtotal Estacas Escavadas C40 (45 unidades)</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">4.369,4 m</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">2.632,2 kg</td>
+              <td style="text-align:right; color:var(--muted); font-size:11.5px;">65,0%</td>
+            </tr>
+            <tr style="border-top:2px solid var(--accent); font-size:13px; background:#1c2336;">
+              <td colspan="5" style="color:var(--accent); font-weight:800;">TOTAL GERAL DE AÇO DA OBRA</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">7.608,5 m</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">4.046,3 kg</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">100,0%</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="margin-top:22px; margin-bottom:8px; font-weight:700; font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:0.05em;">
+          Quadro Consolidado de Quantitativos & Peças (Quadro de Aço Oficial)
+        </div>
+        <table class="table-steel-full" id="modalQuadroAco" data-role="quadro-aco-oficial">
+          <thead>
+            <tr>
+              <th>Conjunto / Elemento</th>
+              <th>Pranchas CAD</th>
+              <th>Bitolas Empregadas</th>
+              <th style="text-align:right;">Peças Cortadas</th>
+              <th style="text-align:right;">Comprimento (m)</th>
+              <th style="text-align:right;">Peso + 10% (kg)</th>
+              <th style="text-align:right;">Concreto C-25</th>
+              <th style="text-align:right;">Fôrmas (m²)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-element="vigas" data-bars="1026" data-length="1829.0" data-weight="812.2">
+              <td><strong>Vigas Baldrames (VB1 a VB22)</strong></td>
+              <td>EST-07, EST-08</td>
+              <td>Ø 5.0, 6.3, 8.0, 10.0, 12.5, 16.0</td>
+              <td style="text-align:right;">1.026 peças</td>
+              <td style="text-align:right; font-weight:700;">1.829,0 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">812,2 kg</td>
+              <td style="text-align:right;">6,84 m³</td>
+              <td style="text-align:right;">86,46 m²</td>
+            </tr>
+            <tr data-element="blocos" data-bars="738" data-length="1410.1" data-weight="601.9">
+              <td><strong>Blocos de Coroamento (B1 a B27)</strong></td>
+              <td>EST-02 a EST-05</td>
+              <td>Ø 5.0, 6.3, 8.0, 10.0, 12.5, 16.0</td>
+              <td style="text-align:right;">738 peças</td>
+              <td style="text-align:right; font-weight:700;">1.410,1 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">601,9 kg</td>
+              <td style="text-align:right;">10,70 m³</td>
+              <td style="text-align:right;">56,88 m²</td>
+            </tr>
+            <tr data-element="estacas_7m" data-bars="2436" data-length="4267.5" data-weight="2583.1">
+              <td><strong>42 Estacas C40 Profundas (7,0 m)</strong></td>
+              <td>EST-01</td>
+              <td>Ø 6.3 mm (2.100 estribos) + Ø 12.5 mm (336 barras)</td>
+              <td style="text-align:right;">2.436 peças (357 de 12m)</td>
+              <td style="text-align:right; font-weight:700;">4.267,5 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">2.583,10 kg</td>
+              <td style="text-align:right;">36,95 m³</td>
+              <td style="text-align:right; color:var(--muted);">-</td>
+            </tr>
+            <tr data-element="estacas_2m" data-bars="66" data-length="101.9" data-weight="49.1">
+              <td><strong>3 Estacas C40 Rasas (2,0 m - E1..E3)</strong></td>
+              <td>EST-01</td>
+              <td>Ø 6.3 mm (42 estribos) + Ø 10.0 mm (24 barras)</td>
+              <td style="text-align:right;">66 peças (10 de 12m)</td>
+              <td style="text-align:right; font-weight:700;">101,9 m</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">49,06 kg</td>
+              <td style="text-align:right;">0,75 m³</td>
+              <td style="text-align:right; color:var(--muted);">-</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid var(--accent); background:#1c2336;">
+              <td colspan="3" style="font-weight:800; color:var(--accent);">TOTAL DA FUNDAÇÃO E BALDRAME</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">4.266 peças</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">7.608,5 m</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">4.046,3 kg</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">55,24 m³</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">143,34 m²</td>
             </tr>
           </tfoot>
         </table>
@@ -4396,6 +4511,100 @@ window.addEventListener('DOMContentLoaded', init);
           </tfoot>
         </table>
 
+        <div style="margin-top:18px; margin-bottom:8px; font-weight:700; font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:0.05em;">
+          Quadro Detalhado de Aço das Estacas C40 (Prancha Oficial AION-EST-01)
+        </div>
+        <table class="table-steel-full">
+          <thead>
+            <tr>
+              <th>Posição / Tipo</th>
+              <th>Bitola (Ø)</th>
+              <th>Aço</th>
+              <th style="text-align:right;">Quant. Peças</th>
+              <th style="text-align:right;">Comp. Unit. (cm)</th>
+              <th style="text-align:right;">Comp. Total (m)</th>
+              <th style="text-align:right;">Peso Nom. (kg)</th>
+              <th style="text-align:right;">Peso + 10% (kg)</th>
+              <th style="text-align:right;">Barras (12 m)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>N1 (42 Estacas 7m)</strong> - Longitudinal</td>
+              <td>12,5 mm</td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">336</td>
+              <td style="text-align:right;">540,00 cm</td>
+              <td style="text-align:right; font-weight:700;">1.814,40 m</td>
+              <td style="text-align:right;">1.747,27 kg</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">1.922,00 kg</td>
+              <td style="text-align:right;">152 barras</td>
+            </tr>
+            <tr>
+              <td><strong>N2 (42 Estacas 7m)</strong> - Estribo c/10</td>
+              <td>6,3 mm</td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">2.100</td>
+              <td style="text-align:right;">116,81 cm</td>
+              <td style="text-align:right; font-weight:700;">2.453,10 m</td>
+              <td style="text-align:right;">601,01 kg</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">661,11 kg</td>
+              <td style="text-align:right;">205 barras</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.02); font-weight:600;">
+              <td colspan="3" style="color:var(--accent);">Subtotal 42 Estacas Profundas (7,0 m)</td>
+              <td style="text-align:right;">2.436 peças</td>
+              <td style="text-align:right;">-</td>
+              <td style="text-align:right;">4.267,50 m</td>
+              <td style="text-align:right;">2.348,28 kg</td>
+              <td style="text-align:right; color:var(--accent);">2.583,10 kg</td>
+              <td style="text-align:right;">357 barras</td>
+            </tr>
+            <tr>
+              <td><strong>N1 (3 Estacas 2m)</strong> - Longitudinal</td>
+              <td>10,0 mm</td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">24</td>
+              <td style="text-align:right;">220,00 cm</td>
+              <td style="text-align:right; font-weight:700;">52,80 m</td>
+              <td style="text-align:right;">32,58 kg</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">35,84 kg</td>
+              <td style="text-align:right;">5 barras</td>
+            </tr>
+            <tr>
+              <td><strong>N2 (3 Estacas 2m)</strong> - Estribo c/14</td>
+              <td>6,3 mm</td>
+              <td><span class="badge-ca50">CA-50</span></td>
+              <td style="text-align:right;">42</td>
+              <td style="text-align:right;">116,81 cm</td>
+              <td style="text-align:right; font-weight:700;">49,06 m</td>
+              <td style="text-align:right;">12,02 kg</td>
+              <td style="text-align:right; font-weight:700; color:#38bdf8;">13,22 kg</td>
+              <td style="text-align:right;">5 barras</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.02); font-weight:600;">
+              <td colspan="3" style="color:var(--accent);">Subtotal 3 Estacas Rasas (2,0 m - E1..E3)</td>
+              <td style="text-align:right;">66 peças</td>
+              <td style="text-align:right;">-</td>
+              <td style="text-align:right;">101,86 m</td>
+              <td style="text-align:right;">44,60 kg</td>
+              <td style="text-align:right; color:var(--accent);">49,06 kg</td>
+              <td style="text-align:right;">10 barras</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid var(--accent); background:#1c2336;">
+              <td colspan="3" style="color:var(--accent); font-weight:800;">TOTAL CONSOLIDADO ESTACAS C40 (45 UNIDADES)</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">2.502 peças</td>
+              <td style="text-align:right; font-weight:800;">-</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">4.369,36 m</td>
+              <td style="text-align:right; font-weight:800;">2.392,88 kg</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">2.632,16 kg</td>
+              <td style="text-align:right; font-weight:800; color:var(--accent);">367 barras</td>
+            </tr>
+          </tfoot>
+        </table>
+
         <div class="steel-summary-card" style="margin-top:14px;">
           <h3>Notas de Execução e Concretagem (NBR 6122)</h3>
           <p>• Concreto FCK ≥ 25 MPa, Slump = (18 ± 2) cm para estacas escavadas com trado mecânico.</p>
@@ -4407,6 +4616,21 @@ window.addEventListener('DOMContentLoaded', init);
       <!-- ABA MODAL 6: RESUMO POR PRANCHA -->
       <div id="modalPranchas" class="modal-pane" style="display:none;">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="steel-summary-card" style="grid-column: 1 / -1;">
+            <h3>EST-01 – Locação e Estacas C40 (42 estacas de 7,0 m + 3 estacas de 2,0 m)</h3>
+            <table class="summary-table">
+              <thead><tr><th>Bitola</th><th>Aço</th><th>C.Total</th><th>Peso Nom.</th><th>Peso + 10%</th><th>Peças / Barras (12 m)</th></tr></thead>
+              <tbody>
+                <tr><td>Ø 6,3 mm</td><td>CA-50</td><td>2.502,2 m</td><td>613,0 kg</td><td>674,3 kg</td><td>2.142 estribos (210 barras)</td></tr>
+                <tr><td>Ø 10,0 mm</td><td>CA-50</td><td>52,8 m</td><td>32,6 kg</td><td>35,8 kg</td><td>24 barras (5 barras)</td></tr>
+                <tr><td>Ø 12,5 mm</td><td>CA-50</td><td>1.814,4 m</td><td>1.747,3 kg</td><td>1.922,0 kg</td><td>336 barras (152 barras)</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="3">Aço Total: <strong>2.632,16 kg</strong> (Nom: 2.392,88 kg)</td><td colspan="3" style="text-align:right;">C-25: <strong>37,70 m³</strong> · 2.502 peças (367 barras 12m)</td></tr>
+              </tfoot>
+            </table>
+          </div>
+
           <div class="steel-summary-card">
             <h3>EST-02 · Blocos B1 a B7</h3>
             <table class="summary-table">
