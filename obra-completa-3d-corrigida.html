@@ -2374,12 +2374,13 @@ function addPileCage(x, y, zCA, isLong, owner) {
   const hoopDiam = 6.3;
   const cageRadius = 17.0; // Diâmetro da armadura = 34,0 cm conforme Prancha EST-01 (cobrimento 3 cm)
 
-  const arranque = isLong ? 40 : 23;        // 40 cm (7m) ou 23 cm (2m)
-  const shaftRebarLen = isLong ? 500 : 197; // 500 cm (7m) ou 197 cm (2m)
-  const totalRebarLen = isLong ? 540 : 220; // 540 cm (7m) ou 220 cm (2m)
+  const isIsolated = owner && (owner === 'E1' || owner === 'E2' || owner === 'E3' || (typeof owner === 'string' && owner.startsWith('E')));
+  const arranque = isIsolated ? 0 : (isLong ? 40 : 23);        // 40 cm (7m) ou 23 cm (2m)
+  const shaftRebarLen = isLong ? 500 : 197;                    // 500 cm (7m) ou 197 cm (2m)
+  const totalRebarLen = isIsolated ? (shaftRebarLen - 4.0) : (isLong ? 540 : 220);
 
-  const zTopRebar = zCA + arranque;
-  const zBottomRebar = zCA - shaftRebarLen;
+  const zTopRebar = isIsolated ? (zCA - 3.0) : (zCA + arranque);
+  const zBottomRebar = zTopRebar - totalRebarLen;
   const zCenterRebar = (zTopRebar + zBottomRebar) / 2;
 
   const longMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.32, metalness: 0.5 });
