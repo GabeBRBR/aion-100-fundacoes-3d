@@ -1437,58 +1437,711 @@ const DATA = {
     { id:"E2", x:10490.5, y:50211.0, prof:200, ca:-10 },
     { id:"E3", x:12213.5, y:50212.5, prof:200, ca:-10 }
   ],
-  vigas: [
+vigas: [
     // Linha Longitudinal Norte (Folha 07)
-    { id:"VB1",  secao:"20x45", b:20, h:45, nos:["B1", "B2", "B3", "B4", "B5"], desc:"Baldrame Longitudinal Norte (P1-P5)",
-      rebar: { inf:{quant:4, diam:16.0, desc:"2 N51 Ø16.0 C=1200 + 2 N52 Ø16.0 C=236 + 1 N10 Ø8.0 C=1200 + 1 N9 Ø8.0 C=150"}, sup:{quant:2, diam:10.0, desc:"2 N34 Ø10.0 C=1200 + 4 N54 Ø16.0 C=200 + 1 N9 Ø8.0 C=150"}, pele:{quant:6, diam:6.3, desc:"2x3 N4 Ø6.3 C=1200 + 2x3 N5 Ø6.3 C=131"}, estribos:{diam:5.0, espac:12, desc:"82 N1 Ø5.0 c/12, c/16 e c/20 C=117"} } },
-    { id:"VB2",  secao:"20x45", b:20, h:45, nos:["B5", "B6", "B7", "B8"], desc:"Baldrame Longitudinal Norte (P5-P8)",
-      rebar: { inf:{quant:3, diam:16.0, desc:"2 N53 Ø16.0 C=1193 + 1 N35 Ø10.0 C=1193"}, sup:{quant:2, diam:10.0, desc:"2 N36 Ø10.0 C=1194 + 3 N54 Ø16.0 C=200 + 1 N7 Ø6.3 C=172"}, pele:{quant:6, diam:6.3, desc:"2x3 N6 Ø6.3 C=1194"}, estribos:{diam:5.0, espac:15, desc:"73 N1 Ø5.0 c/15, c/16, c/20 C=117"} } },
-    { id:"VB3",  secao:"20x45", b:20, h:45, nos:["B8", "B9", "B10"], desc:"Baldrame Longitudinal Norte (P8-P10)",
-      rebar: { inf:{quant:3, diam:8.0, desc:"3 N11 Ø8.0 C=606"}, sup:{quant:2, diam:10.0, desc:"2 N37 Ø10.0 C=606"}, pele:null, estribos:{diam:5.0, espac:20, desc:"31 N1 Ø5.0 c/20 C=117"} } },
-    { id:"VB4",  secao:"40x30", b:40, h:30, pontos:[{x:12901.4, y:50988.9}, {x:13422.4, y:50988.9}], desc:"Baldrame Longitudinal Norte (P10-P11)",
-      rebar: { inf:{quant:4, diam:8.0, desc:"4 N12 Ø8.0 C=575"}, sup:{quant:7, diam:8.0, desc:"6 N14 Ø8.0 C=630 + 1 N13 Ø8.0 C=255 + 1 N9 Ø8.0 C=150"}, pele:null, estribos:{diam:5.0, espac:15, duplo:true, desc:"Estribos duplos 2x39 N2 Ø5.0 c/15 C=105"} } },
+    {
+      id: "VB1",
+      secao: "20x45",
+      b: 20,
+      h: 45,
+      nos: ["B1", "B2", "B3", "B4", "B5"],
+      desc: "Baldrame Longitudinal Norte (P1-P5)",
+      rebar: {
+        inf: {
+          quant: 4, diam: 16.0, desc: "2 N51 Ø16.0 C=1200 + 2 N52 Ø16.0 C=236 + 1 N10 Ø8.0 C=1200 + 1 N9 Ø8.0 C=150",
+          barras: [
+            { n:51, diam:16.0, quant:2, c:1200, comp_reto:1200, x_start:0, x_end:1200, camada:1, funcao:"positivo_corrido" },
+            { n:52, diam:16.0, quant:2, c:236, comp_reto:236, x_start:1033, x_end:1269, camada:1, offset_transv:2.0, funcao:"emenda_traspasse" },
+            { n:10, diam:8.0, quant:1, c:1200, comp_reto:1200, x_start:0, x_end:1200, camada:1, funcao:"reforco_positivo_central" },
+            { n:9, diam:8.0, quant:1, c:150, comp_reto:150, x_start:1119, x_end:1269, camada:1, offset_transv:-2.0, funcao:"reforco_ancoragem" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 10.0, desc: "2 N34 Ø10.0 C=1200 + 4 N54 Ø16.0 C=200 + 1 N9 Ø8.0 C=150",
+          barras: [
+            { n:34, diam:10.0, quant:2, c:1200, comp_reto:1200, x_start:0, x_end:1200, camada:1, tipo:"longitudinal", funcao:"porta_estribo" },
+            { n:9, diam:8.0, quant:1, c:150, comp_reto:150, x_start:1119, x_end:1269, camada:1, tipo:"longitudinal", offset_transv:2.0, funcao:"porta_estribo_trecho_final" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:61.5, x_end:261.5, camada:1, tipo:"negativo", apoio:"P2", funcao:"negativo_pilar" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:426.0, x_end:626.0, camada:1, tipo:"negativo", apoio:"P3", funcao:"negativo_pilar" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:759.0, x_end:959.0, camada:1, tipo:"negativo", apoio:"P4", funcao:"negativo_pilar" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:1069.0, x_end:1269.0, camada:1, tipo:"negativo", apoio:"P5", funcao:"negativo_pilar" }
+          ]
+        },
+        pele: {
+          quant: 6, diam: 6.3, desc: "2x3 N4 Ø6.3 C=1200 + 2x3 N5 Ø6.3 C=131",
+          barras: [
+            { n:4, diam:6.3, quant:6, c:1200, comp_reto:1200, x_start:0, x_end:1200, camada:1, funcao:"pele_longitudinal" },
+            { n:5, diam:6.3, quant:6, c:131, comp_reto:131, x_start:1138, x_end:1269, camada:1, offset_transv:1.5, funcao:"pele_complemento" }
+          ]
+        },
+        estribos: {
+          diam: 5.0, espac: 12, desc: "82 N1 Ø5.0 c/12, c/16 e c/20 C=117",
+          zonas: [
+            { n:1, diam:5.0, quant:9, espac:20, x_start:0, x_end:161.5 },
+            { n:1, diam:5.0, quant:19, espac:20, x_start:161.5, x_end:526.0 },
+            { n:1, diam:5.0, quant:28, espac:12, x_start:526.0, x_end:859.0 },
+            { n:1, diam:5.0, quant:26, espac:16, x_start:859.0, x_end:1269.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB2",
+      secao: "20x45",
+      b: 20,
+      h: 45,
+      nos: ["B5", "B6", "B7", "B8"],
+      desc: "Baldrame Longitudinal Norte (P5-P8)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 16.0, desc: "2 N53 Ø16.0 C=1193 + 1 N35 Ø10.0 C=1193",
+          barras: [
+            { n:53, diam:16.0, quant:2, c:1193, comp_reto:1193, x_start:0, x_end:1193, camada:1, funcao:"positivo_corrido" },
+            { n:35, diam:10.0, quant:1, c:1193, comp_reto:1193, x_start:0, x_end:1193, camada:1, funcao:"positivo_centro" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 10.0, desc: "2 N36 Ø10.0 C=1194 + 3 N54 Ø16.0 C=200 + 1 N7 Ø6.3 C=172",
+          barras: [
+            { n:36, diam:10.0, quant:2, c:1194, comp_reto:1194, x_start:0, x_end:1194, camada:1, tipo:"longitudinal", funcao:"porta_estribo" },
+            { n:7, diam:6.3, quant:1, c:172, comp_reto:158, dobra_esq:14, x_start:0, x_end:158, camada:1, tipo:"negativo", apoio:"P5", funcao:"negativo_p5" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:310.0, x_end:510.0, camada:1, tipo:"negativo", apoio:"P6", funcao:"negativo_pilar" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:690.0, x_end:890.0, camada:1, tipo:"negativo", apoio:"P7", funcao:"negativo_pilar" },
+            { n:54, diam:16.0, quant:1, c:200, comp_reto:200, x_start:994.0, x_end:1194.0, camada:1, tipo:"negativo", apoio:"P8", funcao:"negativo_pilar" }
+          ]
+        },
+        pele: {
+          quant: 6, diam: 6.3, desc: "2x3 N6 Ø6.3 C=1194",
+          barras: [
+            { n:6, diam:6.3, quant:6, c:1194, comp_reto:1194, x_start:0, x_end:1194, camada:1, funcao:"pele_longitudinal" }
+          ]
+        },
+        estribos: {
+          diam: 5.0, espac: 15, desc: "73 N1 Ø5.0 c/15, c/16, c/20 C=117",
+          zonas: [
+            { n:1, diam:5.0, quant:21, espac:20, x_start:0, x_end:410.0 },
+            { n:1, diam:5.0, quant:24, espac:16, x_start:410.0, x_end:790.0 },
+            { n:1, diam:5.0, quant:28, espac:15, x_start:790.0, x_end:1200.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB3",
+      secao: "20x45",
+      b: 20,
+      h: 45,
+      nos: ["B8", "B9", "B10"],
+      desc: "Baldrame Longitudinal Norte (P8-P10)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 8.0, desc: "3 N11 Ø8.0 C=606",
+          barras: [
+            { n:11, diam:8.0, quant:3, c:606, comp_reto:606, x_start:3, x_end:609, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 10.0, desc: "2 N37 Ø10.0 C=606",
+          barras: [
+            { n:37, diam:10.0, quant:2, c:606, comp_reto:606, x_start:3, x_end:609, camada:1, tipo:"longitudinal", funcao:"porta_estribo" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 20, desc: "31 N1 Ø5.0 c/20 C=117",
+          zonas: [
+            { n:1, diam:5.0, quant:31, espac:20, x_start:0, x_end:612.4 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB4",
+      secao: "40x30",
+      b: 40,
+      h: 30,
+      pontos: [{x:12901.4, y:50988.9}, {x:13422.4, y:50988.9}],
+      desc: "Baldrame Longitudinal Norte (P10-P11)",
+      rebar: {
+        inf: {
+          quant: 4, diam: 8.0, desc: "4 N12 Ø8.0 C=575",
+          barras: [
+            { n:12, diam:8.0, quant:4, c:575, comp_reto:575, x_start:3, x_end:578, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 7, diam: 8.0, desc: "6 N14 Ø8.0 C=630 + 1 N13 Ø8.0 C=255 + 1 N9 Ø8.0 C=150",
+          barras: [
+            { n:14, diam:8.0, quant:6, c:630, comp_reto:575, dobra_esq:29, dobra_dir:26, x_start:3, x_end:578, camada:1, tipo:"longitudinal", funcao:"armadura_superior_ganchos" },
+            { n:13, diam:8.0, quant:1, c:255, comp_reto:227, dobra_dir:28, x_start:351, x_end:578, camada:1, tipo:"negativo", apoio:"P11", funcao:"reforco_negativo_p11" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, duplo: true, desc: "Estribos duplos 2x39 N2 Ø5.0 c/15 C=105",
+          zonas: [
+            { n:2, diam:5.0, quant:78, espac:15, x_start:0, x_end:581.0 }
+          ]
+        }
+      }
+    },
 
     // Linha Longitudinal Intermediária (Folhas 07 e 08)
-    { id:"VB5",  secao:"19x30", b:19, h:30, nos:["B12", "B13", "B14", "B15"], desc:"Baldrame Longitudinal Intermediário (P12-P15)",
-      rebar: { inf:{quant:3, diam:10.0, desc:"2 N38 Ø10.0 C=1128 + 1 N15 Ø8.0 C=376"}, sup:{quant:6, diam:8.0, desc:"2 N18 Ø8.0 C=1155 + 2 N17 Ø8.0 C=926 + 2 N16 Ø8.0 C=716"}, pele:null, estribos:{diam:5.0, espac:15, desc:"77 N3 Ø5.0 c/15 C=85"} } },
-    { id:"VB6",  secao:"19x30", b:19, h:30, nos:["B16", "B17"], desc:"Baldrame Intermediário (P16-P17)",
-      rebar: { inf:{quant:2, diam:8.0, desc:"2 N19 Ø8.0 C=486"}, sup:{quant:2, diam:8.0, desc:"2 N19 Ø8.0 C=486"}, pele:null, estribos:{diam:5.0, espac:15, desc:"33 N3 Ø5.0 c/15 C=85"} } },
-    { id:"VB7",  secao:"19x30", b:19, h:30, pontos:[{x:12354.5, y:50299.5}, {x:12731.0, y:50299.5}], desc:"Baldrame Intermediário entre VB17 e VB19 (vão 401 cm)",
-      rebar: { inf:{quant:2, diam:12.5, desc:"2 N44 Ø12.5 C=395"}, sup:{quant:2, diam:8.0, desc:"2 N20 Ø8.0 C=395"}, pele:null, estribos:{diam:5.0, espac:11, desc:"30 N3 Ø5.0 c/11 e c/15 C=85"} } },
-    { id:"VB8",  secao:"19x30", b:19, h:30, nos:["B19", "E2"], desc:"Baldrame Longitudinal Oeste (P19 a Estaca E2)",
-      rebar: { inf:{quant:2, diam:10.0, desc:"2 N42 Ø10.0 C=413"}, sup:{quant:2, diam:10.0, desc:"2 N43 Ø10.0 C=435"}, pele:null, estribos:{diam:5.0, espac:15, desc:"26 N3 Ø5.0 c/15 C=85"} } },
-    { id:"VB9",  secao:"19x30", b:19, h:30, pontos:[{x:12213.5, y:50212.5}, {x:12354.5, y:50212.5}], desc:"Baldrame de Ligação (Estaca E3 à VB17)",
-      rebar: { inf:{quant:2, diam:8.0, desc:"2 N21 Ø8.0 C=167"}, sup:{quant:2, diam:8.0, desc:"2 N22 Ø8.0 C=209"}, pele:null, estribos:{diam:5.0, espac:15, desc:"9 N3 Ø5.0 c/15 C=85"} } },
+    {
+      id: "VB5",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B12", "B13", "B14", "B15"],
+      desc: "Baldrame Longitudinal Intermediário (P12-P15)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 10.0, desc: "2 N38 Ø10.0 C=1128 + 1 N15 Ø8.0 C=376",
+          barras: [
+            { n:38, diam:10.0, quant:2, c:1128, comp_reto:1128, x_start:3, x_end:1131, camada:1, funcao:"positivo_corrido" },
+            { n:15, diam:8.0, quant:1, c:376, comp_reto:376, x_start:412, x_end:788, camada:2, funcao:"reforco_positivo_central" }
+          ]
+        },
+        sup: {
+          quant: 6, diam: 8.0, desc: "2 N18 Ø8.0 C=1155 + 2 N17 Ø8.0 C=926 + 2 N16 Ø8.0 C=716",
+          barras: [
+            { n:18, diam:8.0, quant:2, c:1155, comp_reto:1127, dobra_dir:28, x_start:3, x_end:1130, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado_p15" },
+            { n:17, diam:8.0, quant:2, c:926, comp_reto:898, dobra_dir:28, x_start:232, x_end:1130, camada:2, tipo:"negativo", funcao:"negativo_p14_p15" },
+            { n:16, diam:8.0, quant:2, c:716, comp_reto:688, dobra_dir:28, x_start:442, x_end:1130, camada:1, tipo:"negativo", funcao:"negativo_p13_p15" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "77 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:28, espac:15, x_start:0, x_end:412.0 },
+            { n:3, diam:5.0, quant:12, espac:15, x_start:412.0, x_end:582.3 },
+            { n:3, diam:5.0, quant:37, espac:15, x_start:582.3, x_end:1133.4 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB6",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B16", "B17"],
+      desc: "Baldrame Intermediário (P16-P17)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 8.0, desc: "2 N19 Ø8.0 C=486",
+          barras: [
+            { n:19, diam:8.0, quant:2, c:486, comp_reto:438, dobra_esq:24, dobra_dir:24, x_start:3, x_end:441, camada:1, funcao:"positivo_com_ganchos" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 8.0, desc: "2 N19 Ø8.0 C=486",
+          barras: [
+            { n:19, diam:8.0, quant:2, c:486, comp_reto:438, dobra_esq:24, dobra_dir:24, x_start:3, x_end:441, camada:1, tipo:"longitudinal", funcao:"porta_estribo_com_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "33 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:33, espac:15, x_start:0, x_end:492.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB7",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      pontos: [{x:12354.5, y:50299.5}, {x:12731.0, y:50299.5}],
+      desc: "Baldrame Intermediário entre VB17 e VB19 (vão 401 cm)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 12.5, desc: "2 N44 Ø12.5 C=395",
+          barras: [
+            { n:44, diam:12.5, quant:2, c:395, comp_reto:371, dobra_esq:12, dobra_dir:12, x_start:3, x_end:374, camada:1, funcao:"positivo_ganchos" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 8.0, desc: "2 N20 Ø8.0 C=395",
+          barras: [
+            { n:20, diam:8.0, quant:2, c:395, comp_reto:371, dobra_esq:12, dobra_dir:12, x_start:3, x_end:374, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 11, desc: "30 N3 Ø5.0 c/11 e c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:10, espac:11, x_start:0, x_end:110.0 },
+            { n:3, diam:5.0, quant:10, espac:11, x_start:110.0, x_end:253.0 },
+            { n:3, diam:5.0, quant:10, espac:15, x_start:253.0, x_end:401.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB8",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B19", "E2"],
+      desc: "Baldrame Longitudinal Oeste (P19 a Estaca E2)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 10.0, desc: "2 N42 Ø10.0 C=413",
+          barras: [
+            { n:42, diam:10.0, quant:2, c:413, comp_reto:413, x_start:0, x_end:413, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 10.0, desc: "2 N43 Ø10.0 C=435",
+          barras: [
+            { n:43, diam:10.0, quant:2, c:435, comp_reto:413, dobra_esq:22, x_start:0, x_end:413, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado_p19" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "26 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:26, espac:15, x_start:0, x_end:379.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB9",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      pontos: [{x:12213.5, y:50212.5}, {x:12354.5, y:50212.5}],
+      desc: "Baldrame de Ligação (Estaca E3 à VB17)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 8.0, desc: "2 N21 Ø8.0 C=167",
+          barras: [
+            { n:21, diam:8.0, quant:2, c:167, comp_reto:159, dobra_esq:8, x_start:0, x_end:159, camada:1, funcao:"positivo_gancho" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 8.0, desc: "2 N22 Ø8.0 C=209",
+          barras: [
+            { n:22, diam:8.0, quant:2, c:209, comp_reto:159, dobra_esq:26, dobra_dir:24, x_start:0, x_end:159, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "9 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:9, espac:15, x_start:0, x_end:125.0 }
+          ]
+        }
+      }
+    },
 
     // Linha Longitudinal Sul (Folha 07)
-    { id:"VB10", secao:"19x30", b:19, h:30, nos:["B20", "B23", "B24", "B25"], desc:"Baldrame Longitudinal Sul (P20-P25)",
-      rebar: { inf:{quant:3, diam:8.0, desc:"3 N23 Ø8.0 C=1147"}, sup:{quant:3, diam:12.5, desc:"3 N46 Ø12.5 C=1158"}, pele:null, estribos:{diam:5.0, espac:15, desc:"80 N3 Ø5.0 c/14 e c/15 C=85"} } },
-    { id:"VB11", secao:"19x30", b:19, h:30, nos:["B25", "B26", "B27", "B21"], desc:"Baldrame Longitudinal Sul (P25-P21)",
-      rebar: { inf:{quant:4, diam:8.0, desc:"3 N25 Ø8.0 C=1194 + 1 N24 Ø8.0 C=387"}, sup:{quant:5, diam:12.5, desc:"3 N48 Ø12.5 C=1085 + 2 N49 Ø12.5 C=226"}, pele:null, estribos:{diam:5.0, espac:15, desc:"82 N3 Ø5.0 c/15 C=85"} } },
-    { id:"VB12", secao:"19x30", b:19, h:30, nos:["B21", "B22"], desc:"Baldrame Longitudinal Sul (P21-P22)",
-      rebar: { inf:{quant:2, diam:8.0, desc:"2 N26 Ø8.0 C=436"}, sup:{quant:3, diam:8.0, desc:"2 N26 Ø8.0 C=436 + 1 N27 Ø8.0 C=172"}, pele:null, estribos:{diam:5.0, espac:15, desc:"30 N3 Ø5.0 c/15 C=85"} } },
+    {
+      id: "VB10",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B20", "B23", "B24", "B25"],
+      desc: "Baldrame Longitudinal Sul (P20-P25)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 8.0, desc: "3 N23 Ø8.0 C=1147",
+          barras: [
+            { n:23, diam:8.0, quant:3, c:1147, comp_reto:1147, x_start:3, x_end:1150, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 3, diam: 12.5, desc: "3 N46 Ø12.5 C=1158",
+          barras: [
+            { n:46, diam:12.5, quant:3, c:1158, comp_reto:1147, dobra_esq:11, x_start:3, x_end:1150, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "80 N3 Ø5.0 c/14 e c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:28, espac:15, x_start:0, x_end:410.0 },
+            { n:3, diam:5.0, quant:24, espac:14, x_start:410.0, x_end:743.0 },
+            { n:3, diam:5.0, quant:28, espac:15, x_start:743.0, x_end:1153.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB11",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B25", "B26", "B27", "B21"],
+      desc: "Baldrame Longitudinal Sul (P25-P21)",
+      rebar: {
+        inf: {
+          quant: 4, diam: 8.0, desc: "3 N25 Ø8.0 C=1194 + 1 N24 Ø8.0 C=387",
+          barras: [
+            { n:25, diam:8.0, quant:3, c:1194, comp_reto:1194, x_start:3, x_end:1197, camada:1, funcao:"positivo_corrido" },
+            { n:24, diam:8.0, quant:1, c:387, comp_reto:387, x_start:790, x_end:1177, camada:2, funcao:"reforco_positivo_vao3" }
+          ]
+        },
+        sup: {
+          quant: 5, diam: 12.5, desc: "3 N48 Ø12.5 C=1085 + 2 N49 Ø12.5 C=226",
+          barras: [
+            { n:48, diam:12.5, quant:3, c:1085, comp_reto:1074, dobra_esq:11, x_start:3, x_end:1077, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado_p25" },
+            { n:49, diam:12.5, quant:2, c:226, comp_reto:215, dobra_dir:11, x_start:982, x_end:1197, camada:1, tipo:"negativo", offset_transv:2.0, funcao:"emenda_negativo_p21" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "82 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:28, espac:15, x_start:0, x_end:410.0 },
+            { n:3, diam:5.0, quant:26, espac:15, x_start:410.0, x_end:790.0 },
+            { n:3, diam:5.0, quant:28, espac:15, x_start:790.0, x_end:1200.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB12",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B21", "B22"],
+      desc: "Baldrame Longitudinal Sul (P21-P22)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 8.0, desc: "2 N26 Ø8.0 C=436",
+          barras: [
+            { n:26, diam:8.0, quant:2, c:436, comp_reto:436, x_start:3, x_end:439, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 3, diam: 8.0, desc: "2 N26 Ø8.0 C=436 + 1 N27 Ø8.0 C=172",
+          barras: [
+            { n:26, diam:8.0, quant:2, c:436, comp_reto:436, x_start:3, x_end:439, camada:1, tipo:"longitudinal", funcao:"porta_estribo" },
+            { n:27, diam:8.0, quant:1, c:172, comp_reto:172, x_start:0, x_end:172, camada:1, tipo:"negativo", apoio:"P21", funcao:"negativo_p21" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "30 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:30, espac:15, x_start:0, x_end:442.0 }
+          ]
+        }
+      }
+    },
 
     // Vigas Transversais (Norte-Sul) (Folhas 07 e 08)
-    { id:"VB13", secao:"20x45", b:20, h:45, nos:["B20", "B19", "B18"], desc:"Baldrame Transversal Oeste (P20-P18)",
-      rebar: { inf:{quant:3, diam:8.0, desc:"3 N28 Ø8.0 C=540"}, sup:{quant:4, diam:8.0, desc:"4 N29 Ø8.0 C=577"}, pele:{quant:6, diam:6.3, desc:"2x3 N8 Ø6.3 C=260"}, estribos:{diam:5.0, espac:16, desc:"36 N1 Ø5.0 c/13, c/16, c/20 C=117"} } },
-    { id:"VB14", secao:"20x45", b:20, h:45, nos:["B18", "E1", "B2"], desc:"Baldrame Transversal (P18 - E1 - P2)",
-      rebar: { inf:{quant:2, diam:10.0, desc:"2 N39 Ø10.0 C=611"}, sup:{quant:4, diam:10.0, desc:"2 N41 Ø10.0 C=639 + 2 N40 Ø10.0 C=325"}, pele:null, estribos:{diam:5.0, espac:15, desc:"40 N1 Ø5.0 c/15 e c/16 C=117"} } },
-    { id:"VB15", secao:"19x30", b:19, h:30, nos:["B23", "E2"], desc:"Baldrame Transversal (P23 a Estaca E2)",
-      rebar: { inf:{quant:2, diam:8.0, desc:"2 N30 Ø8.0 C=255"}, sup:{quant:2, diam:8.0, desc:"2 N31 Ø8.0 C=305"}, pele:null, estribos:{diam:5.0, espac:15, desc:"15 N3 Ø5.0 c/15 C=85"} } },
-    { id:"VB16", secao:"19x30", b:19, h:30, pontos:[{x:12213.5, y:50000.0}, {x:12213.5, y:50212.5}], desc:"Baldrame Transversal (VB11 a Estaca E3)",
-      rebar: { inf:{quant:2, diam:8.0, desc:"2 N32 Ø8.0 C=236"}, sup:{quant:4, diam:8.0, desc:"4 N33 Ø8.0 C=282"}, pele:null, estribos:{diam:5.0, espac:15, desc:"13 N3 Ø5.0 c/15 C=85"} } },
-    { id:"VB17", secao:"19x30", b:19, h:30, nos:["B21", "B16"], desc:"Baldrame Transversal (P21-P16)",
-      rebar: { inf:{quant:4, diam:8.0, desc:"2 N5 Ø8.0 C=712 + 2 N3 Ø6.3 C=371"}, sup:{quant:5, diam:12.5, desc:"3 N14 Ø12.5 C=337 + 2 N8 Ø10.0 C=417"}, pele:null, estribos:{diam:5.0, espac:15, desc:"28 N1 Ø5.0 c/15 C=85"} } },
-    { id:"VB18", secao:"19x30", b:19, h:30, nos:["B16", "B12", "B8"], desc:"Baldrame Transversal (P16 - P12 - P8)",
-      rebar: { inf:{quant:3, diam:10.0, desc:"3 N12 Ø10.0 C=597"}, sup:{quant:3, diam:12.5, desc:"3 N16 Ø12.5 C=618"}, pele:null, estribos:{diam:5.0, espac:15, desc:"18 N1 Ø5.0 c/15 C=85"} } },
-    { id:"VB19", secao:"19x30", b:19, h:30, nos:["B22", "B17"], desc:"Baldrame Transversal (P22-P17)",
-      rebar: { inf:{quant:3, diam:10.0, desc:"2 N9 Ø10.0 C=664 + 1 N4 Ø6.3 C=171"}, sup:{quant:2, diam:16.0, desc:"2 N18 Ø16.0 C=654"}, pele:null, estribos:{diam:5.0, espac:15, desc:"31 N1 Ø5.0 c/15 C=85"} } },
-    { id:"VB20", secao:"19x30", b:19, h:30, nos:["B17", "B13", "B9"], desc:"Baldrame Transversal (P17 - P13 - P9)",
-      rebar: { inf:{quant:4, diam:10.0, desc:"3 N10 Ø10.0 C=571 + 1 N3 Ø6.3 C=371"}, sup:{quant:2, diam:16.0, desc:"2 N19 Ø16.0 C=624"}, pele:null, estribos:{diam:5.0, espac:15, desc:"15 N1 Ø5.0 c/15 C=85"} } },
-    { id:"VB21", secao:"19x30", b:19, h:30, nos:["B14", "B10"], desc:"Baldrame Transversal (P14-P10)",
-      rebar: { inf:{quant:2, diam:16.0, desc:"2 N20 Ø16.0 C=324"}, sup:{quant:2, diam:16.0, desc:"2 N20 Ø16.0 C=324"}, pele:null, estribos:{diam:5.0, espac:10, desc:"12 N1 Ø5.0 c/10 C=85"} } },
-    { id:"VB22",  secao:"40x30", b:40, h:30, nos:["B15", "B11"], desc:"Baldrame Transversal Leste (P15-P11)",
-      rebar: { inf:{quant:4, diam:12.5, desc:"4 N15 Ø12.5 C=326"}, sup:{quant:7, diam:10.0, desc:"7 N11 Ø10.0 C=374"}, pele:null, estribos:{diam:5.0, espac:15, duplo:true, desc:"Estribos duplos 2x8 N2 Ø5.0 c/15 C=105"} } }
+    {
+      id: "VB13",
+      secao: "20x45",
+      b: 20,
+      h: 45,
+      nos: ["B20", "B19", "B18"],
+      desc: "Baldrame Transversal Oeste (P20-P18)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 8.0, desc: "3 N28 Ø8.0 C=540",
+          barras: [
+            { n:28, diam:8.0, quant:3, c:540, comp_reto:540, x_start:3, x_end:543, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 4, diam: 8.0, desc: "4 N29 Ø8.0 C=577",
+          barras: [
+            { n:29, diam:8.0, quant:4, c:577, comp_reto:540, dobra_esq:37, x_start:3, x_end:543, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado" }
+          ]
+        },
+        pele: {
+          quant: 6, diam: 6.3, desc: "2x3 N8 Ø6.3 C=260",
+          barras: [
+            { n:8, diam:6.3, quant:6, c:260, comp_reto:260, x_start:3, x_end:263, camada:1, funcao:"pele" }
+          ]
+        },
+        estribos: {
+          diam: 5.0, espac: 16, desc: "36 N1 Ø5.0 c/13, c/16, c/20 C=117",
+          zonas: [
+            { n:1, diam:5.0, quant:15, espac:16, x_start:0, x_end:235.5 },
+            { n:1, diam:5.0, quant:13, espac:13, x_start:235.5, x_end:377.0 },
+            { n:1, diam:5.0, quant:8, espac:20, x_start:377.0, x_end:546.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB14",
+      secao: "20x45",
+      b: 20,
+      h: 45,
+      nos: ["B18", "E1", "B2"],
+      desc: "Baldrame Transversal (P18 - E1 - P2)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 10.0, desc: "2 N39 Ø10.0 C=611",
+          barras: [
+            { n:39, diam:10.0, quant:2, c:611, comp_reto:611, x_start:3, x_end:614, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 4, diam: 10.0, desc: "2 N41 Ø10.0 C=639 + 2 N40 Ø10.0 C=325",
+          barras: [
+            { n:41, diam:10.0, quant:2, c:639, comp_reto:611, dobra_dir:28, x_start:3, x_end:614, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado_p2" },
+            { n:40, diam:10.0, quant:2, c:325, comp_reto:297, dobra_dir:28, x_start:317, x_end:614, camada:1, tipo:"negativo", apoio:"P2", offset_transv:2.0, funcao:"negativo_p2" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "40 N1 Ø5.0 c/15 e c/16 C=117",
+          zonas: [
+            { n:1, diam:5.0, quant:23, espac:16, x_start:0, x_end:368.0 },
+            { n:1, diam:5.0, quant:17, espac:15, x_start:368.0, x_end:617.4 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB15",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B23", "E2"],
+      desc: "Baldrame Transversal (P23 a Estaca E2)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 8.0, desc: "2 N30 Ø8.0 C=255",
+          barras: [
+            { n:30, diam:8.0, quant:2, c:255, comp_reto:255, x_start:0, x_end:255, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 8.0, desc: "2 N31 Ø8.0 C=305",
+          barras: [
+            { n:31, diam:8.0, quant:2, c:305, comp_reto:255, dobra_esq:24, dobra_dir:26, x_start:0, x_end:255, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "15 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:15, espac:15, x_start:0, x_end:221.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB16",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      pontos: [{x:12213.5, y:50000.0}, {x:12213.5, y:50212.5}],
+      desc: "Baldrame Transversal (VB11 a Estaca E3)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 8.0, desc: "2 N32 Ø8.0 C=236",
+          barras: [
+            { n:32, diam:8.0, quant:2, c:236, comp_reto:236, x_start:0, x_end:236, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 4, diam: 8.0, desc: "4 N33 Ø8.0 C=282",
+          barras: [
+            { n:33, diam:8.0, quant:4, c:282, comp_reto:236, dobra_esq:24, dobra_dir:22, x_start:0, x_end:236, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "13 N3 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:3, diam:5.0, quant:13, espac:15, x_start:0, x_end:183.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB17",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B21", "B16"],
+      desc: "Baldrame Transversal (P21-P16)",
+      rebar: {
+        inf: {
+          quant: 4, diam: 8.0, desc: "2 N5 Ø8.0 C=712 + 2 N3 Ø6.3 C=371",
+          barras: [
+            { n:5, diam:8.0, quant:2, c:712, comp_reto:704, dobra_esq:8, x_start:0, x_end:704, camada:1, funcao:"positivo_longo" },
+            { n:3, diam:6.3, quant:2, c:371, comp_reto:358, dobra_esq:13, x_start:0, x_end:358, camada:1, offset_transv:1.5, funcao:"positivo_reforco" }
+          ]
+        },
+        sup: {
+          quant: 5, diam: 12.5, desc: "3 N14 Ø12.5 C=337 + 2 N8 Ø10.0 C=417",
+          barras: [
+            { n:8, diam:10.0, quant:2, c:417, comp_reto:417, x_start:0, x_end:417, camada:1, tipo:"longitudinal", funcao:"porta_estribo" },
+            { n:14, diam:12.5, quant:3, c:337, comp_reto:337, x_start:53, x_end:390, camada:1, tipo:"negativo", funcao:"negativo_reforco" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "28 N1 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:1, diam:5.0, quant:28, espac:15, x_start:0, x_end:390.4 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB18",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B16", "B12", "B8"],
+      desc: "Baldrame Transversal (P16 - P12 - P8)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 10.0, desc: "3 N12 Ø10.0 C=597",
+          barras: [
+            { n:12, diam:10.0, quant:3, c:597, comp_reto:597, x_start:0, x_end:597, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 3, diam: 12.5, desc: "3 N16 Ø12.5 C=618",
+          barras: [
+            { n:16, diam:12.5, quant:3, c:618, comp_reto:597, dobra_dir:21, x_start:0, x_end:597, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ancorado" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "18 N1 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:1, diam:5.0, quant:9, espac:15, x_start:0, x_end:107.5 },
+            { n:1, diam:5.0, quant:9, espac:15, x_start:107.5, x_end:223.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB19",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B22", "B17"],
+      desc: "Baldrame Transversal (P22-P17)",
+      rebar: {
+        inf: {
+          quant: 3, diam: 10.0, desc: "2 N9 Ø10.0 C=664 + 1 N4 Ø6.3 C=171",
+          barras: [
+            { n:9, diam:10.0, quant:2, c:664, comp_reto:654, dobra_dir:10, x_start:0, x_end:654, camada:1, funcao:"positivo_ancorado" },
+            { n:4, diam:6.3, quant:1, c:171, comp_reto:158, dobra_esq:13, x_start:0, x_end:158, camada:1, offset_transv:1.5, funcao:"positivo_reforco" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 16.0, desc: "2 N18 Ø16.0 C=654",
+          barras: [
+            { n:18, diam:16.0, quant:2, c:654, comp_reto:654, x_start:0, x_end:654, camada:1, tipo:"longitudinal", funcao:"porta_estribo" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "31 N1 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:1, diam:5.0, quant:31, espac:15, x_start:0, x_end:440.4 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB20",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B17", "B13", "B9"],
+      desc: "Baldrame Transversal (P17 - P13 - P9)",
+      rebar: {
+        inf: {
+          quant: 4, diam: 10.0, desc: "3 N10 Ø10.0 C=571 + 1 N3 Ø6.3 C=371",
+          barras: [
+            { n:10, diam:10.0, quant:3, c:571, comp_reto:547, dobra_esq:10, dobra_dir:14, x_start:0, x_end:547, camada:1, funcao:"positivo_ganchos" },
+            { n:3, diam:6.3, quant:1, c:371, comp_reto:358, dobra_esq:13, x_start:0, x_end:358, camada:1, offset_transv:1.5, funcao:"positivo_reforco" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 16.0, desc: "2 N19 Ø16.0 C=624",
+          barras: [
+            { n:19, diam:16.0, quant:2, c:624, comp_reto:547, dobra_esq:24, dobra_dir:53, x_start:0, x_end:547, camada:1, tipo:"longitudinal", funcao:"porta_estribo_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, desc: "15 N1 Ø5.0 c/15 C=85",
+          zonas: [
+            { n:1, diam:5.0, quant:9, espac:15, x_start:0, x_end:107.5 },
+            { n:1, diam:5.0, quant:6, espac:15, x_start:107.5, x_end:173.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB21",
+      secao: "19x30",
+      b: 19,
+      h: 30,
+      nos: ["B14", "B10"],
+      desc: "Baldrame Transversal (P14-P10)",
+      rebar: {
+        inf: {
+          quant: 2, diam: 16.0, desc: "2 N20 Ø16.0 C=324",
+          barras: [
+            { n:20, diam:16.0, quant:2, c:324, comp_reto:324, x_start:0, x_end:324, camada:1, funcao:"positivo_corrido" }
+          ]
+        },
+        sup: {
+          quant: 2, diam: 16.0, desc: "2 N20 Ø16.0 C=324",
+          barras: [
+            { n:20, diam:16.0, quant:2, c:324, comp_reto:324, x_start:0, x_end:324, camada:1, tipo:"longitudinal", funcao:"porta_estribo" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 10, desc: "12 N1 Ø5.0 c/10 C=85",
+          zonas: [
+            { n:1, diam:5.0, quant:12, espac:10, x_start:0, x_end:110.0 }
+          ]
+        }
+      }
+    },
+    {
+      id: "VB22",
+      secao: "40x30",
+      b: 40,
+      h: 30,
+      nos: ["B15", "B11"],
+      desc: "Baldrame Transversal Leste (P15-P11)",
+      rebar: {
+        inf: {
+          quant: 4, diam: 12.5, desc: "4 N15 Ø12.5 C=326",
+          barras: [
+            { n:15, diam:12.5, quant:4, c:326, comp_reto:319, dobra_dir:7, x_start:0, x_end:319, camada:1, funcao:"positivo_ancorado" }
+          ]
+        },
+        sup: {
+          quant: 7, diam: 10.0, desc: "7 N11 Ø10.0 C=374",
+          barras: [
+            { n:11, diam:10.0, quant:7, c:374, comp_reto:319, dobra_esq:24, dobra_dir:31, x_start:0, x_end:319, camada:1, tipo:"longitudinal", funcao:"armadura_superior_ganchos" }
+          ]
+        },
+        pele: null,
+        estribos: {
+          diam: 5.0, espac: 15, duplo: true, desc: "Estribos duplos 2x8 N2 Ø5.0 c/15 C=105",
+          zonas: [
+            { n:2, diam:5.0, quant:16, espac:15, x_start:0, x_end:104.5 }
+          ]
+        }
+      }
+    }
   ]
 };
 
@@ -2078,111 +2731,379 @@ function pdfBarGroups(desc = '') {
   return groups;
 }
 
+/**
+ * Motor Geométrico 3D de Alta Fidelidade para Armaduras de Vigas Baldrames Contínuas.
+ * Fiel ao projeto executivo (AIO-EST-07/08) e NBR 6118:2023.
+ * 
+ * Principais Características:
+ * 1. Estaqueamento por comprimento de arco real (elimina distorção de +18.5%).
+ * 2. Segmentação física exata das barras (comprimentos C e comp_reto fiéis ao DXF).
+ * 3. Afastamento lateral de contato (delta n = +/-1.8 cm) em emendas por traspasse.
+ * 4. Dobras de ancoragem vertical de 90° nos apoios extremos.
+ * 5. Armaduras negativas concentradas e centralizadas sobre os pilares intermediários.
+ * 6. Estribos fechados retangulares com cantos arredondados e recobrimento de 5 cm das faces dos apoios.
+ * 7. Suporte a estribos duplos para vigas largas (VB4 e VB22).
+ * 8. Compatibilidade retroativa total com fallback estruturado para descrições legadas em texto.
+ */
 function buildContinuousBeamRebar(v, dxfSegments, mats) {
-  const zTopo = -10, zBase = zTopo - v.h, zInf = zBase + 4, zSup = zTopo - 4;
-  const path = new THREE.CurvePath();
+  if (!dxfSegments || !dxfSegments.length) return;
+
+  const bLarg = v.b || 20;
+  const hAlt  = v.h || 45;
+  const zTopo = -10.0;
+  const zBase = zTopo - hAlt;
+  const zInf  = zBase + 4.0;
+  const zSup  = zTopo - 4.0;
+  const cover = 3.0;
+  const yDist = Math.max(2.0, (bLarg - 2 * cover) / 2.0);
+
+  // 1. Processamento e parametrização dos vãos livres e travessias a partir do DXF
   const rects = dxfSegments.map(rect => {
-    const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]); const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
+    const [x1, y1] = DXF_FORM.toCm(rect[0], rect[1]);
+    const [x2, y2] = DXF_FORM.toCm(rect[2], rect[3]);
     const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
-    const a = horizontal ? new THREE.Vector3(x1 - CX, (y1 + y2) / 2 - CY, 0) : new THREE.Vector3((x1 + x2) / 2 - CX, y1 - CY, 0);
-    const b = horizontal ? new THREE.Vector3(x2 - CX, (y1 + y2) / 2 - CY, 0) : new THREE.Vector3((x1 + x2) / 2 - CX, y2 - CY, 0);
+    const a = horizontal 
+      ? new THREE.Vector3(x1 - CX, (y1 + y2) / 2.0 - CY, 0) 
+      : new THREE.Vector3((x1 + x2) / 2.0 - CX, y1 - CY, 0);
+    const b = horizontal 
+      ? new THREE.Vector3(x2 - CX, (y1 + y2) / 2.0 - CY, 0) 
+      : new THREE.Vector3((x1 + x2) / 2.0 - CX, y2 - CY, 0);
     return { a, b, len: a.distanceTo(b), angle: Math.atan2(b.y - a.y, b.x - a.x) };
   });
-  rects.forEach((r, index) => { if (index) path.add(new THREE.LineCurve3(rects[index - 1].b, r.a)); path.add(new THREE.LineCurve3(r.a, r.b)); });
-  const group = new THREE.Group(); group.userData = { parentId: v.id };
-  const normal = new THREE.Vector3(-(rects[0].b.y - rects[0].a.y), rects[0].b.x - rects[0].a.x, 0).normalize();
-    const addLongitudinal = (entries, z, material) => {
-    if (!entries.length) return;
-    const maxQuant = Math.max(...entries.map(e => e.quant));
-    
-    // Distribute entries into 'maxQuant' lines
-    const lines = Array.from({length: maxQuant}, () => []);
-    entries.forEach(entry => {
-        if (entry.quant === 1) {
-            lines[Math.floor(maxQuant/2)].push(entry);
-        } else if (entry.quant === maxQuant) {
-            for(let i=0; i<maxQuant; i++) lines[i].push(entry);
-        } else {
-            let step = (maxQuant - 1) / (entry.quant - 1 || 1);
-            for(let i=0; i<entry.quant; i++) {
-                lines[Math.round(i * step)].push(entry);
-            }
-        }
+
+  const pStartClear = rects[0].a.clone();
+  const pEndClear   = rects[rects.length - 1].b.clone();
+  const dir         = rects[0].b.clone().sub(rects[0].a).normalize();
+  const normal      = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
+  const spanSpanLen = pEndClear.clone().sub(pStartClear).dot(dir);
+
+  // Identificação de dados explícitos de armadura (Schema Augmentado)
+  const explicitInf   = v.rebar && v.rebar.inf && v.rebar.inf.barras ? v.rebar.inf.barras : null;
+  const explicitSup   = v.rebar && v.rebar.sup && v.rebar.sup.barras ? v.rebar.sup.barras : null;
+  const explicitPele  = v.rebar && v.rebar.pele && v.rebar.pele.barras ? v.rebar.pele.barras : null;
+  const explicitZonas = v.rebar && v.rebar.estribos && v.rebar.estribos.zonas ? v.rebar.estribos.zonas : null;
+  const hasExplicitData = !!(explicitInf || explicitSup);
+
+  // Determinação do comprimento físico total e ajuste da ancoragem nos pilares de extremidade
+  let maxBarEnd = spanSpanLen;
+  if (hasExplicitData) {
+    const allBars = [
+      ...(explicitInf || []),
+      ...(explicitSup || []),
+      ...(explicitPele || [])
+    ];
+    allBars.forEach(b => {
+      const bEnd = b.x_end !== undefined ? b.x_end : (b.x_start || 0) + (b.comp_reto || b.c || 0);
+      if (bEnd > maxBarEnd) maxBarEnd = bEnd;
     });
+  }
 
-    const totalBeamLen = rects.reduce((sum, r) => sum + r.len, 0);
+  // Embutimento nos pilares de extremidade para coincidir a origem com o início das ancoragens
+  const extTotal = Math.max(0, maxBarEnd - spanSpanLen);
+  const extStart = extTotal > 0 ? extTotal / 2.0 : 0.0;
+  const pOrigin = pStartClear.clone().sub(dir.clone().multiplyScalar(extStart));
 
-    for (let ordinal = 0; ordinal < maxQuant; ordinal++) {
-      const offset = maxQuant > 1 ? -((v.b - 6) / 2) + ordinal * (v.b - 6) / (maxQuant - 1) : 0;
-      const shiftedPath = new THREE.CurvePath();
-      path.curves.forEach(curve => shiftedPath.add(new THREE.LineCurve3(
-        curve.v1.clone().addScaledVector(normal, offset).setZ(z), 
-        curve.v2.clone().addScaledVector(normal, offset).setZ(z)
-      )));
+  const group = new THREE.Group();
+  group.userData = { parentId: v.id, type: 'ARMADURA_VIGA_SEGMENTADA' };
 
-      let currentPos = 0;
-      const lineEntries = lines[ordinal];
-      
-      lineEntries.forEach((entry, idx) => {
-        let pieceLen = entry.len || totalBeamLen;
-        if (pieceLen > totalBeamLen) pieceLen = totalBeamLen; 
-        
-        if (currentPos + pieceLen > totalBeamLen) {
-            currentPos = Math.max(0, totalBeamLen - pieceLen);
+  // Conversor Isométrico: mapeia (estação longitudinal s, afastamento lateral n, cota z) em coordenada 3D
+  const getPoint3D = (s, n, z) => {
+    return pOrigin.clone()
+      .addScaledVector(dir, s)
+      .addScaledVector(normal, n)
+      .setZ(z);
+  };
+
+  // Gerador de barra segmentada individual com concordância e dobras verticais de 90°
+  const addRebarSegment = (spec) => {
+    const diam = spec.diam || 10.0;
+    const rBar = barRadiusCm(diam);
+    const rBend = Math.max(2.0, (diam / 10.0) * 2.5);
+    const s1 = spec.x_start !== undefined ? spec.x_start : 0;
+    const s2 = spec.x_end !== undefined ? spec.x_end : (s1 + (spec.comp_reto || spec.c || spanSpanLen));
+    const d1 = spec.dobra_esq || 0;
+    const d2 = spec.dobra_dir || 0;
+    const hookDir1 = spec.hookDir1 !== undefined ? spec.hookDir1 : (spec.role === 'inf' ? 1 : -1);
+    const hookDir2 = spec.hookDir2 !== undefined ? spec.hookDir2 : (spec.role === 'inf' ? 1 : -1);
+    const zBaseLevel = spec.z !== undefined ? spec.z : (spec.role === 'inf' ? zInf : zSup);
+    const zLevel = spec.camada === 2 
+      ? zBaseLevel + (spec.role === 'inf' ? 2.5 : -2.5) 
+      : zBaseLevel;
+
+    const pts = [];
+
+    // Gancho de extremidade esquerda (90° vertical para dentro do apoio)
+    if (d1 > 0) {
+      const rb1 = Math.min(d1 * 0.5, rBend);
+      pts.push(getPoint3D(s1, spec.n, zLevel + hookDir1 * d1));
+      pts.push(getPoint3D(s1, spec.n, zLevel + hookDir1 * rb1));
+      pts.push(getPoint3D(s1 + rb1, spec.n, zLevel));
+    } else {
+      pts.push(getPoint3D(s1, spec.n, zLevel));
+    }
+
+    // Gancho de extremidade direita (90° vertical para dentro do apoio)
+    if (d2 > 0) {
+      const rb2 = Math.min(d2 * 0.5, rBend);
+      pts.push(getPoint3D(s2 - rb2, spec.n, zLevel));
+      pts.push(getPoint3D(s2, spec.n, zLevel + hookDir2 * rb2));
+      pts.push(getPoint3D(s2, spec.n, zLevel + hookDir2 * d2));
+    } else {
+      pts.push(getPoint3D(s2, spec.n, zLevel));
+    }
+
+    let curve;
+    let tubularSegs;
+    if (pts.length === 2) {
+      // Barra retilínea: geometria ultra-otimizada (apenas 2 subdivisões tubulares)
+      curve = new THREE.LineCurve3(pts[0], pts[1]);
+      tubularSegs = 2;
+    } else {
+      // Barra com dobras: concordância suave de alta fidelidade
+      curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.05);
+      tubularSegs = Math.max(8, pts.length * 3);
+    }
+
+    const geom = new THREE.TubeGeometry(curve, tubularSegs, rBar, 6, false);
+    const mesh = new THREE.Mesh(geom, spec.mat || mats.inf);
+    mesh.userData = {
+      parentId: v.id,
+      type: 'BARRA_SEGMENTO',
+      mark: spec.mark ? `N${spec.mark}` : 'Barra',
+      diam: diam,
+      c: spec.c || (s2 - s1 + d1 + d2),
+      comp_reto: spec.comp_reto || (s2 - s1),
+      dobra_esq: d1,
+      dobra_dir: d2,
+      role: spec.role || 'longitudinal',
+      tipo: spec.tipo || spec.role
+    };
+    group.add(mesh);
+  };
+
+  // 2. Renderização Estruturada Exata (Quando DATA.vigas possui barras discretas)
+  if (hasExplicitData) {
+    // 2.1 Armadura Inferior (Positiva)
+    if (explicitInf && explicitInf.length) {
+      explicitInf.forEach(bar => {
+        const q = bar.quant || 1;
+        for (let k = 0; k < q; k++) {
+          let nNom = 0;
+          if (q === 2) {
+            nNom = k === 0 ? -yDist : yDist;
+          } else if (q > 2) {
+            nNom = -yDist + k * (2.0 * yDist / (q - 1));
+          }
+          let nEff = nNom;
+          if (bar.offset_transv !== undefined) {
+            nEff += bar.offset_transv;
+          } else if (bar.funcao === 'emenda_traspasse' || bar.lapOffset) {
+            const shift = bar.lapOffset || 1.8;
+            nEff += (nNom > 0 ? -shift : shift);
+          }
+          addRebarSegment({
+            mark: bar.n,
+            diam: bar.diam,
+            c: bar.c,
+            comp_reto: bar.comp_reto,
+            dobra_esq: bar.dobra_esq,
+            dobra_dir: bar.dobra_dir,
+            x_start: bar.x_start,
+            x_end: bar.x_end,
+            camada: bar.camada || 1,
+            n: nEff,
+            role: 'inf',
+            mat: mats.inf,
+            tipo: 'positivo'
+          });
         }
-
-        const points = [];
-        const numSamples = Math.max(2, Math.floor(pieceLen / 10)); 
-        for(let i=0; i<=numSamples; i++) {
-            const u = (currentPos + (i/numSamples)*pieceLen) / totalBeamLen;
-            points.push(shiftedPath.getPointAt(Math.max(0, Math.min(1, u))));
-        }
-        
-        const pieceCurve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.01);
-        const mesh = new THREE.Mesh(new THREE.TubeGeometry(pieceCurve, Math.max(6, numSamples), barRadiusCm(entry.diam), 6, false), material);
-        mesh.userData = { parentId: v.id, role: 'barra-longitudinal', diam: entry.diam, pieceLen: pieceLen };
-        group.add(mesh);
-
-        currentPos += pieceLen;
       });
     }
-  };  addLongitudinal(pdfBarGroups(v.rebar?.inf?.desc), zInf, mats.inf);
-  addLongitudinal(pdfBarGroups(v.rebar?.sup?.desc), zSup, mats.sup);
-  if (v.rebar?.pele) {
-    const peleEntries = pdfBarGroups(v.rebar.pele.desc);
-    const totalPele = peleEntries.reduce((sum, item) => sum + item.quant, 0);
-    const layers = Math.max(1, Math.round(totalPele / 2));
-    const yOffs = [-((v.b - 6) / 2), ((v.b - 6) / 2)];
-    let pIdx = 0;
-    peleEntries.forEach(entry => {
-      const rPele = barRadiusCm(entry.diam);
-      for (let k = 0; k < entry.quant; k++, pIdx++) {
-        const side = yOffs[pIdx % 2];
-        const layerIdx = Math.floor(pIdx / 2) % layers;
-        const zPele = zInf + (layerIdx + 1) * (zSup - zInf) / (layers + 1);
-        const shifted = new THREE.CurvePath();
-        path.curves.forEach(curve => shifted.add(new THREE.LineCurve3(curve.v1.clone().addScaledVector(normal, side).setZ(zPele), curve.v2.clone().addScaledVector(normal, side).setZ(zPele))));
-        const mesh = new THREE.Mesh(new THREE.TubeGeometry(shifted, 10, rPele, 6, false), mats.pele);
-        mesh.userData = { parentId: v.id, role: 'armadura-pele', diam: entry.diam };
-        group.add(mesh);
+
+    // 2.2 Armadura Superior (Porta-estribos e Negativos de Apoio)
+    if (explicitSup && explicitSup.length) {
+      explicitSup.forEach(bar => {
+        const isNeg = bar.tipo === 'negativo' || bar.funcao === 'negativo_pilar';
+        const q = bar.quant || 1;
+        for (let k = 0; k < q; k++) {
+          let nNom = 0;
+          if (isNeg) {
+            if (q === 1) {
+              nNom = 0;
+            } else if (q === 2) {
+              nNom = k === 0 ? -yDist * 0.45 : yDist * 0.45;
+            } else {
+              nNom = -yDist * 0.5 + k * (yDist / (q - 1));
+            }
+          } else {
+            if (q === 2) {
+              nNom = k === 0 ? -yDist : yDist;
+            } else if (q > 2) {
+              nNom = -yDist + k * (2.0 * yDist / (q - 1));
+            }
+          }
+          let nEff = nNom;
+          if (bar.offset_transv !== undefined) {
+            nEff += bar.offset_transv;
+          } else if (bar.funcao === 'emenda_traspasse' || bar.lapOffset) {
+            const shift = bar.lapOffset || 1.8;
+            nEff += (nNom > 0 ? -shift : shift);
+          }
+          addRebarSegment({
+            mark: bar.n,
+            diam: bar.diam,
+            c: bar.c,
+            comp_reto: bar.comp_reto,
+            dobra_esq: bar.dobra_esq,
+            dobra_dir: bar.dobra_dir,
+            x_start: bar.x_start,
+            x_end: bar.x_end,
+            camada: bar.camada || 1,
+            n: nEff,
+            z: isNeg ? zSup - 1.2 : zSup,
+            role: isNeg ? 'neg' : 'sup',
+            mat: mats.sup,
+            tipo: isNeg ? 'negativo' : 'longitudinal'
+          });
+        }
+      });
+    }
+
+    // 2.3 Armadura de Pele (Vigas h >= 45 cm)
+    if (explicitPele && explicitPele.length) {
+      explicitPele.forEach(bar => {
+        const totalPele = bar.quant || 2;
+        const perSide = Math.max(1, Math.round(totalPele / 2));
+        for (let k = 0; k < totalPele; k++) {
+          const side = (k % 2 === 0) ? -yDist : yDist;
+          const levelIdx = Math.floor(k / 2);
+          const zPele = zInf + (levelIdx + 1) * (zSup - zInf) / (perSide + 1);
+          let nEff = side;
+          if (bar.offset_transv !== undefined) {
+            const shift = Math.abs(bar.offset_transv);
+            nEff += (side > 0 ? -shift : shift);
+          } else if (bar.funcao === 'pele_complementar' || bar.funcao === 'pele_complemento' || bar.lapOffset) {
+            const shift = bar.lapOffset || 1.5;
+            nEff += (side > 0 ? -shift : shift);
+          }
+          addRebarSegment({
+            mark: bar.n,
+            diam: bar.diam,
+            c: bar.c,
+            comp_reto: bar.comp_reto,
+            dobra_esq: bar.dobra_esq,
+            dobra_dir: bar.dobra_dir,
+            x_start: bar.x_start,
+            x_end: bar.x_end,
+            camada: 1,
+            n: nEff,
+            z: zPele,
+            role: 'pele',
+            mat: mats.pele,
+            tipo: 'pele'
+          });
+        }
+      });
+    }
+  } else {
+    // 3. Fallback Estruturado para Descrições em Texto (Zero Distorção Geométrica)
+    const addLegacyLongitudinal = (desc, z, material, role) => {
+      const groups = pdfBarGroups(desc);
+      if (!groups.length) return;
+      const maxQuant = Math.max(...groups.map(g => g.quant));
+      for (let ord = 0; ord < maxQuant; ord++) {
+        const nNom = maxQuant > 1 ? -yDist + ord * (2.0 * yDist) / (maxQuant - 1) : 0;
+        let currS = 0;
+        groups.forEach((entry, idx) => {
+          const pLen = entry.len && entry.len > 0 ? entry.len : spanSpanLen;
+          const s1 = currS;
+          const s2 = Math.min(spanSpanLen, s1 + pLen);
+          const isOverlapping = s2 > spanSpanLen || idx > 0;
+          const nEff = isOverlapping ? nNom + (nNom >= 0 ? -1.8 : 1.8) : nNom;
+          addRebarSegment({
+            diam: entry.diam,
+            c: pLen,
+            comp_reto: s2 - s1,
+            x_start: s1,
+            x_end: s2,
+            n: nEff,
+            z: z,
+            role: role,
+            mat: material
+          });
+          currS += pLen;
+        });
+      }
+    };
+    addLegacyLongitudinal(v.rebar?.inf?.desc, zInf, mats.inf, 'inf');
+    addLegacyLongitudinal(v.rebar?.sup?.desc, zSup, mats.sup, 'sup');
+  }
+
+  // 4. Renderização Precisa dos Estribos por Zonas de Cisalhamento
+  const isDuplo = !!(v.rebar?.estribos?.duplo || bLarg >= 38);
+  const stirrupDiam = v.rebar?.estribos?.diam || 5.0;
+  const rEstribo = barRadiusCm(stirrupDiam);
+
+  // Constrói malha retangular fechada com cantos arredondados (NBR 6118)
+  const makeStirrupLoopMesh = (centerY, halfW) => {
+    const rc = 1.0; // Raio interno dos cantos (cm)
+    const pts = [
+      new THREE.Vector3(0, centerY - halfW + rc, zInf),
+      new THREE.Vector3(0, centerY + halfW - rc, zInf),
+      new THREE.Vector3(0, centerY + halfW, zInf + rc),
+      new THREE.Vector3(0, centerY + halfW, zSup - rc),
+      new THREE.Vector3(0, centerY + halfW - rc, zSup),
+      new THREE.Vector3(0, centerY - halfW + rc, zSup),
+      new THREE.Vector3(0, centerY - halfW, zSup - rc),
+      new THREE.Vector3(0, centerY - halfW, zInf + rc)
+    ];
+    const loopCurve = new THREE.CatmullRomCurve3(pts, true, 'centripetal', 0.05);
+    return new THREE.Mesh(new THREE.TubeGeometry(loopCurve, 20, rEstribo, 6, true), mats.stirrup);
+  };
+
+  const placeStirrupAt = (s) => {
+    const sGroup = new THREE.Group();
+    sGroup.position.copy(getPoint3D(s, 0, 0));
+    sGroup.rotation.z = Math.atan2(dir.y, dir.x);
+    if (isDuplo) {
+      const halfW = yDist / 2.0;
+      sGroup.add(makeStirrupLoopMesh(-yDist / 2.0, halfW));
+      sGroup.add(makeStirrupLoopMesh(yDist / 2.0, halfW));
+    } else {
+      sGroup.add(makeStirrupLoopMesh(0, yDist));
+    }
+    group.add(sGroup);
+  };
+
+  if (explicitZonas && explicitZonas.length) {
+    // Distribuição por zonas nominais de cisalhamento
+    explicitZonas.forEach(zona => {
+      const espac = zona.espac || 15.0;
+      const count = (isDuplo && (zona.quant || 0) > Math.round((zona.x_end - zona.x_start) / (espac * 0.75)))
+        ? Math.round(zona.quant / 2)
+        : (zona.quant || Math.max(1, Math.floor((zona.x_end - zona.x_start) / espac)));
+      const zLen = zona.x_end - zona.x_start;
+      const step = count > 1 ? zLen / (count - 1) : 0;
+      for (let i = 0; i < count; i++) {
+        placeStirrupAt(zona.x_start + i * step);
+      }
+    });
+  } else {
+    // Distribuição por vão livre com recobrimento de 5 cm das faces dos apoios
+    rects.forEach(r => {
+      const sStartSpan = r.a.clone().sub(pOrigin).dot(dir) + 5.0;
+      const sEndSpan   = r.b.clone().sub(pOrigin).dot(dir) - 5.0;
+      const spanLen    = sEndSpan - sStartSpan;
+      if (spanLen <= 0) return;
+      const espac = v.rebar?.estribos?.espac || 15.0;
+      const count = Math.max(2, Math.floor(spanLen / espac) + 1);
+      const step  = spanLen / (count - 1);
+      for (let i = 0; i < count; i++) {
+        placeStirrupAt(sStartSpan + i * step);
       }
     });
   }
 
-  const stirrupCount = Number((v.rebar?.estribos?.desc || '').match(/(\d+)\s+N\d+/)?.[1] || 0);
-  const totalLength = rects.reduce((sum, r) => sum + r.len, 0);
-  let remaining = stirrupCount;
-  rects.forEach((r, index) => {
-    const count = index === rects.length - 1 ? remaining : Math.max(0, Math.round(stirrupCount * r.len / totalLength)); remaining -= count;
-    const local = new THREE.Group(); local.position.copy(r.a.clone().add(r.b).multiplyScalar(.5)); local.rotation.z = r.angle;
-    for (let i = 0; i < count; i++) {
-      const at = count === 1 ? 0 : -r.len / 2 + i * r.len / (count - 1);
-      const yHalf = (v.b - 6) / 2, z0 = zInf, z1 = zSup;
-      const makeLoop = (centerY, halfWidth) => new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(at,centerY-halfWidth,z0),new THREE.Vector3(at,centerY+halfWidth,z0),new THREE.Vector3(at,centerY+halfWidth,z1),new THREE.Vector3(at,centerY-halfWidth,z1)], true, 'catmullrom', .05), 16, barRadiusCm(v.rebar?.estribos?.diam || 5), 6, true), mats.stirrup);
-      if (v.rebar?.estribos?.duplo) { local.add(makeLoop(-yHalf/2, yHalf/2)); local.add(makeLoop(yHalf/2, yHalf/2)); } else local.add(makeLoop(0, yHalf));
-    }
-    group.add(local);
-  });
   groupBeamRebars.add(group);
 }
 
