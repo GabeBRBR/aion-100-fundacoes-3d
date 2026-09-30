@@ -10,7 +10,7 @@ Acesse o modelo 3D em tempo real diretamente pelo navegador:
 ---
 
 ### 🏗️ Características do Modelo
-- **27 Blocos de Fundação (B1 a B27):** 10 blocos de 2 estacas em X, 5 blocos de 2 estacas em Y e 12 blocos de 1 estaca, com armação completa (tirantes, grelhas, cintas e arranques de pilares).
+- **27 Blocos de Fundação (B1 a B27):** 14 blocos de 2 estacas em Y (60x160 cm), 1 bloco de 2 estacas em X (160x60 cm - B17) e 12 blocos de 1 estaca, com armação completa (tirantes, grelhas, cintas e arranques de pilares).
 - **22 Vigas Baldrames (VB1 a VB22):** Modeladas com 42 trechos fiéis às fôrmas do DXF estrutural, com topos nivelados na cota -0,10 m (Nível -10 cm).
 - **45 Estacas Escavadas C40 Ø40 cm:** 42 estacas de 7,0 m (C.A. -0,60 m) e 3 estacas de 2,0 m (C.A. -0,10 m), com gaiolas completas de armação e corte visual ergonômico aos 3,5 m.
 - **Quadros Oficiais de Resumo de Aço, Concreto e Fôrmas:** Integrados na interface com KPIs executivos e modal em tela cheia.

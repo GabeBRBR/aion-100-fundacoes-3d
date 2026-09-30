@@ -1445,10 +1445,10 @@ const DATA = {
            rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:6, espac:8, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
     "B20": { id:"B20", pilar:"P20", x:10116.0, y:50005.5, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
            rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:5.0, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:10.0, alt:83} } },
-    "B21": { id:"B21", pilar:"P21", x:12349.0, y:50005.5, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
-           rebar:{ tirante:{diam:10.0, quant:7, espac:6}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:16.0, alt:105} } },
-    "B22": { id:"B22", pilar:"P22", x:12731.0, y:50005.5, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
+    "B21": { id:"B21", pilar:"P21", x:12731.0, y:50005.5, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
            rebar:{ tirante:{diam:10.0, quant:6, espac:7}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:16.0, alt:105} } },
+    "B22": { id:"B22", pilar:"P22", x:12349.0, y:50005.5, dim:[60,160,60],  orient:"Y",       estacas:[{rx:0, ry:-50, prof:700, ca:-60}, {rx:0, ry:50, prof:700, ca:-60}],
+           rebar:{ tirante:{diam:10.0, quant:7, espac:6}, sup:{diam:8.0, quant:4}, lateralN9:{diam:8.0, quant:2}, cintasH:{diam:5.0, quant:5, espac:9}, estribosV:{diam:5.0, quant:7}, pilar:{quant:4, diam:16.0, alt:105} } },
     "B23": { id:"B23", pilar:"P23", x:10496.0, y:50000.0, dim:[60,60,60],   orient:"CENTRAL", estacas:[{rx:0, ry:0, prof:700, ca:-60}],
            rebar:{ estribosV:{diam:5.0, quant:4, w:49, h:41}, cintasH:{diam:6.3, quant:5, espac:10, w:51, l:51}, pilar:{quant:6, diam:16.0, alt:105} } },
 
@@ -1807,8 +1807,8 @@ vigas: [
       secao: "19x30",
       b: 19,
       h: 30,
-      nos: ["B25", "B26", "B27", "B21"],
-      desc: "Baldrame Longitudinal Sul (P25-P21)",
+      nos: ["B25", "B26", "B27", "B22"],
+      desc: "Baldrame Longitudinal Sul (P25-P22)",
       rebar: {
         inf: {
           quant: 4, diam: 8.0, desc: "3 N25 Ø8.0 C=1194 + 1 N24 Ø8.0 C=387",
@@ -1840,8 +1840,8 @@ vigas: [
       secao: "19x30",
       b: 19,
       h: 30,
-      nos: ["B21", "B22"],
-      desc: "Baldrame Longitudinal Sul (P21-P22)",
+      nos: ["B22", "B21"],
+      desc: "Baldrame Longitudinal Sul (P22-P21)",
       rebar: {
         inf: {
           quant: 2, diam: 8.0, desc: "2 N26 Ø8.0 C=436",
@@ -1997,8 +1997,8 @@ vigas: [
       secao: "19x30",
       b: 19,
       h: 30,
-      nos: ["B21", "B16"],
-      desc: "Baldrame Transversal (P21-P16)",
+      nos: ["B22", "B16"],
+      desc: "Baldrame Transversal (P22-P16)",
       rebar: {
         inf: {
           quant: 4, diam: 8.0, desc: "2 N5 Ø8.0 C=712 + 2 N3 Ø6.3 C=371",
@@ -2058,8 +2058,8 @@ vigas: [
       secao: "19x30",
       b: 19,
       h: 30,
-      nos: ["B22", "B17"],
-      desc: "Baldrame Transversal (P22-P17)",
+      nos: ["B21", "B17"],
+      desc: "Baldrame Transversal (P21-P17)",
       rebar: {
         inf: {
           quant: 3, diam: 10.0, desc: "2 N9 Ø10.0 C=664 + 1 N4 Ø6.3 C=171",
