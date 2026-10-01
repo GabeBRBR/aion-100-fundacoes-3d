@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "project": "AION-100",
+  "title": "E2E Test Fixtures and Reference Ground Truth for Vigas Baldrames (VB1-VB22)",
+  "version": "1.0.0",
+  "metadata": {
+    "cover_min_cm": 2.50,
+    "cover_nominal_cm": 3.00,
+    "epsilon_cm": 0.0001,
+    "elevation_top_cm": -10.0,
+    "total_beams": 22,
+    "horizontal_beams_count": 12,
+    "vertical_beams_count": 10
+  },
+  "beam_bounding_boxes": {
+    "VB1": { "orientation": "HORIZONTAL", "b": 20.0, "h": 45.0, "x": [-1741.2, -472.2], "y": [534.4, 554.4], "z": [-55.0, -10.0] },
+    "VB2": { "orientation": "HORIZONTAL", "b": 20.0, "h": 45.0, "x": [-532.2, 667.8], "y": [534.4, 554.4], "z": [-55.0, -10.0] },
+    "VB3": { "orientation": "HORIZONTAL", "b": 20.0, "h": 45.0, "x": [607.8, 1220.2], "y": [534.4, 554.4], "z": [-55.0, -10.0] },
+    "VB4": { "orientation": "HORIZONTAL", "b": 40.0, "h": 30.0, "x": [1160.2, 1741.2], "y": [514.4, 554.4], "z": [-40.0, -10.0] },
+    "VB5": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [607.8, 1741.2], "y": [244.9, 263.9], "z": [-40.0, -10.0] },
+    "VB6": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [607.8, 1099.8], "y": [16.4, 35.4], "z": [-40.0, -10.0] },
+    "VB7": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [628.3, 1029.3], "y": [-118.6, -99.6], "z": [-40.0, -10.0] },
+    "VB8": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [-1619.7, -1200.7], "y": [-323.0, -304.0], "z": [-40.0, -10.0] },
+    "VB9": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [483.3, 647.3], "y": [-321.5, -302.5], "z": [-40.0, -10.0] },
+    "VB10": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [-1625.2, -472.2], "y": [-534.0, -515.0], "z": [-40.0, -10.0] },
+    "VB11": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [-532.2, 667.8], "y": [-534.0, -515.0], "z": [-40.0, -10.0] },
+    "VB12": { "orientation": "HORIZONTAL", "b": 19.0, "h": 30.0, "x": [607.8, 1049.8], "y": [-534.0, -515.0], "z": [-40.0, -10.0] },
+    "VB13": { "orientation": "VERTICAL", "b": 20.0, "h": 45.0, "x": [-1605.2, -1585.2], "y": [-549.0, -3.0], "z": [-55.0, -10.0] },
+    "VB14": { "orientation": "VERTICAL", "b": 20.0, "h": 45.0, "x": [-1574.2, -1554.2], "y": [-63.0, 554.4], "z": [-55.0, -10.0] },
+    "VB15": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [-1230.2, -1211.2], "y": [-554.5, -293.5], "z": [-40.0, -10.0] },
+    "VB16": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [492.8, 511.8], "y": [-534.0, -293.0], "z": [-40.0, -10.0] },
+    "VB17": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [628.3, 647.3], "y": [-599.0, 111.4], "z": [-40.0, -10.0] },
+    "VB18": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [628.3, 647.3], "y": [-48.6, 554.4], "z": [-40.0, -10.0] },
+    "VB19": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [1010.3, 1029.3], "y": [-599.0, 61.4], "z": [-40.0, -10.0] },
+    "VB20": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [1010.3, 1029.3], "y": [1.4, 554.4], "z": [-40.0, -10.0] },
+    "VB21": { "orientation": "VERTICAL", "b": 19.0, "h": 30.0, "x": [1180.7, 1199.7], "y": [224.4, 554.4], "z": [-40.0, -10.0] },
+    "VB22": { "orientation": "VERTICAL", "b": 40.0, "h": 30.0, "x": [1701.2, 1741.2], "y": [229.9, 554.4], "z": [-40.0, -10.0] }
+  },
+  "synthetic_fixtures": {
+    "boundary_exact_cover": {
+      "box": { "x": [0.0, 100.0], "y": [0.0, 20.0], "z": [-45.0, -10.0] },
+      "point": [2.50000, 2.50000, -12.50000],
+      "r_bar": 0.0,
+      "expected_cover": 2.50000,
+      "expected_violations": 0
+    },
+    "boundary_sub_epsilon_cover": {
+      "box": { "x": [0.0, 100.0], "y": [0.0, 20.0], "z": [-45.0, -10.0] },
+      "point": [2.49995, 2.50000, -12.50000],
+      "r_bar": 0.0,
+      "expected_cover": 2.49995,
+      "expected_violations": 0
+    },
+    "boundary_breach_cover": {
+      "box": { "x": [0.0, 100.0], "y": [0.0, 20.0], "z": [-45.0, -10.0] },
+      "point": [2.49000, 2.50000, -12.50000],
+      "r_bar": 0.0,
+      "expected_cover": 2.49000,
+      "expected_violations": 1
+    },
+    "gross_out_of_bounds": {
+      "box": { "x": [0.0, 100.0], "y": [0.0, 20.0], "z": [-45.0, -10.0] },
+      "point": [50.0, 10.0, -5.0],
+      "r_bar": 0.5,
+      "expected_cover": -5.5,
+      "expected_violations": 1
+    },
+    "unclamped_hook_violation": {
+      "beam_h": 30.0,
+      "nominal_hook_len": 53.0,
+      "clamped": false,
+      "protrusion_cm": 28.0
+    },
+    "clamped_hook_containment": {
+      "beam_h": 30.0,
+      "nominal_hook_len": 53.0,
+      "clamped": true,
+      "max_allowed_len": 22.4,
+      "achieved_cover_cm": 2.50
+    }
+  },
+  "dxf_steel_summary": {
+    "folha_07": {
+      "sheet": "AIO-EST-07-BAL-VIG",
+      "beams": ["VB1", "VB2", "VB3", "VB4", "VB5", "VB6", "VB7", "VB8", "VB9", "VB10", "VB11", "VB12", "VB13", "VB14", "VB15", "VB16"],
+      "concrete_volume_m3": 5.95,
+      "formwork_area_m2": 74.85,
+      "total_stirrups": 680,
+      "ca60_marks": ["N1", "N2", "N3"],
+      "ca50_marks": ["N4", "N5", "N6", "N7", "N8", "N9", "N10", "N11", "N12", "N13", "N14", "N15", "N16", "N17", "N18", "N19", "N20", "N21", "N22", "N23", "N24", "N25", "N26", "N27", "N28", "N29", "N30", "N31", "N32", "N33", "N34", "N35", "N36", "N37", "N38", "N39", "N40", "N41", "N42", "N43", "N44", "N45", "N46", "N47", "N48", "N49", "N50", "N51", "N52", "N53", "N54"]
+    },
+    "folha_08": {
+      "sheet": "AIO-EST-08-BAL-VIG",
+      "beams": ["VB17", "VB18", "VB19", "VB20", "VB21", "VB22"],
+      "concrete_volume_m3": 0.89,
+      "formwork_area_m2": 11.61,
+      "total_stirrups": 175,
+      "ca60_marks": ["N1", "N2"],
+      "ca50_marks": ["N3", "N4", "N5", "N6", "N7", "N8", "N9", "N10", "N11", "N12", "N13", "N14", "N15", "N16", "N17", "N18", "N19", "N20"]
+    },
+    "total_consolidated": {
+      "beams_count": 22,
+      "total_stirrups_audited": 855,
+      "total_concrete_volume_m3": 6.84,
+      "total_formwork_area_m2": 86.46
+    }
+  }
+}
